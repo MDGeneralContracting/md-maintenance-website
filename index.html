@@ -13,32 +13,35 @@
             color: #333;
         }
         .header {
-            background-color: #1e3a8a; /* Dark blue */
+            background-color: #0F4467;
             color: white;
             padding: 20px;
             text-align: center;
         }
         .header h1 {
             margin: 0;
-            font-size: 2em;
+            font-size: 2.5em;
         }
         .content {
             max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 30px auto;
+            padding: 20px; /* Reduced from 30px */
             background-color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
         .content p {
-            font-size: 1.1em;
-            line-height: 1.5;
+            font-size: 1.2em;
+            line-height: 1.6;
             margin-bottom: 20px;
         }
         .iframe-container {
             position: relative;
             overflow: hidden;
-            padding-top: 56.25%; /* 16:9 aspect ratio; adjust if needed */
+            padding-top: 60%; /* Reduced from 75% */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
         .iframe-container iframe {
             position: absolute;
@@ -47,15 +50,6 @@
             width: 100%;
             height: 100%;
             border: none;
-        }
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.5em;
-            }
-            .content {
-                margin: 10px;
-                padding: 15px;
-            }
         }
     </style>
 </head>
@@ -66,7 +60,7 @@
     <div class="content">
         <p>This page provides a basic reference for boom lift information collected by our installers. The data is updated automatically whenever a new submission is received through our Microsoft Form. Please refresh the page to see the latest updates.</p>
         <div class="iframe-container">
-            <iframe src="https://1drv.ms/x/s!AlOdiUefwQJGqb9NVRVfEOcf1wOmjw?embed=1&em=2" width="402" height="346" frameborder="0" scrolling="no"></iframe>
+            <iframe src="https://1drv.ms/x/s!AlOdiUefwQJGqb9NVRVfEOcf1wOmjw?embed=1&em=2" width="100%" height="800" frameborder="0" scrolling="no"></iframe>
         </div>
     </div>
 </body>
