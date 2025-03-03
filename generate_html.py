@@ -95,4 +95,12 @@ html_content = template.render(
     full_data_table=full_data_table,
     latest_boom_table=latest_boom_table,
     user_summary_table=user_summary_table,
-    current_period_start=current
+    current_period_start=current_period_start.strftime('%Y-%m-%d'),
+    current_period_end=current_period_end.strftime('%Y-%m-%d'),
+    daily_review_html=daily_review_html,
+    builder_summary_table=builder_summary_table
+)
+
+# Save to index.html
+with open('index.html', 'w') as f:
+    f.write(html_content)
