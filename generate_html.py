@@ -5,79 +5,60 @@ from io import BytesIO
 from jinja2 import Template
 from datetime import datetime, timedelta
 
-# Fetch Excel URL from environment variable (set in GitHub Secrets)
+# Download Excel file
 url = os.environ['EXCEL_URL']
+response = requests.get(url, timeout=10)
+response.raise_for_status()
+excel_data = BytesIO(response.content)
 
-# Download the Excel file with debugging
-try:
-    response = requests.get(url, timeout=10)
-    response.raise_for_status()  # Raise an error for bad HTTP status codes
-    excel_data = BytesIO(response.content)
-    print(f"Downloaded {len(response.content)} bytes from {url}")
-    print(f"Content-Type: {response.headers.get('Content-Type')}")
-    # Save the first 100 bytes for inspection (as hex for non-text content)
-    print(f"First 100 bytes: {response.content[:100].hex()}")
-except requests.RequestException as e:
-    print(f"Failed to download Excel file: {e}")
-    raise
+# Read Sheet1
+df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
+df['General Issues'] = df['General Issues'].fillna('')
 
-# Verify the content looks like an Excel file (ZIP signature: PK\x03\x04)
-if not response.content.startswith(b'PK\x03\x04'):
-    print("Error: Downloaded content is not a valid ZIP-based Excel file (.xlsx).")
-    raise ValueError("Invalid Excel file format")
+# Helper function to generate HTML table
+def generate_html_table(df, columns):
+    headers = ''.join(f'<th>{col}</th>' for col in columns)
+    rows = ''
+    for _, row in df.iterrows():
+        cells = ''.join(f'<td>{row[col]}</td>' for col in columns)
+        rows += f'<tr>{cells}</tr>'
+    return f'<table class="data-table"><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
 
-# Read Sheet1 into a DataFrame with explicit engine
-try:
-    df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
-except ValueError as e:
-    print(f"Error reading Excel file: {e}")
-    raise
-
-# Define columns to display
+# Full Data Table
 display_columns = [
     'Name', 'Boom Lift ID', 'Completion time', 'Builder', 'Site', 'Hours',
     'Oil Level', 'Gas Level', 'General Issues', 'Continue to Maintenance or Complete'
 ]
-df_display = df[display_columns].copy()
+full_data_df = df[display_columns].sort_values('Completion time', ascending=False)
+full_data_table = generate_html_table(full_data_df, display_columns)
 
-# Fill NaN in General Issues with empty string
-df_display['General Issues'] = df_display['General Issues'].fillna('')
-
-# Full data table, sorted by Completion time descending
-full_data_table = df_display.sort_values('Completion time', ascending=False).to_html(
-    classes='table table-striped', index=False
-)
-
-# Latest boom lift summary
+# Latest Boom Lift Summary
+boom_columns = ['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']
 latest_boom = df.sort_values('Completion time', ascending=False).drop_duplicates('Boom Lift ID').sort_values('Boom Lift ID')
-latest_boom_table = latest_boom[[
-    'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues'
-]].to_html(classes='table table-striped', index=False)
+latest_boom_table = generate_html_table(latest_boom[boom_columns], boom_columns)
 
-# User summary
+# User Summary
 user_summary = df.groupby('Name').agg(
     submissions=('Completion time', 'count'),
     latest_submission=('Completion time', 'max'),
     issues=('General Issues', lambda x: (x != '').sum())
 ).reset_index().sort_values('Name')
-user_summary_table = user_summary.to_html(classes='table table-striped', index=False)
+user_columns = ['Name', 'submissions', 'latest_submission', 'issues']
+user_summary_table = generate_html_table(user_summary, user_columns)
 
-# Define pay period start and calculate current period
+# 2-Week Summary
 start_date = datetime(2024, 12, 30)
 today = datetime.now()
 days_diff = (today - start_date).days
 period_number = days_diff // 14
 current_period_start = start_date + timedelta(days=period_number * 14)
 current_period_end = current_period_start + timedelta(days=13)
-
-# Filter for current pay period
 two_week_df = df[
     (df['Completion time'] >= current_period_start) &
     (df['Completion time'] < current_period_end + timedelta(days=1))
 ].copy()
 two_week_df['Date'] = two_week_df['Completion time'].dt.date
 
-# Generate daily review HTML
 daily_review_html = ''
 if not two_week_df.empty:
     dates = sorted(two_week_df['Date'].unique(), reverse=True)
@@ -94,35 +75,89 @@ if not two_week_df.empty:
 else:
     daily_review_html = '<p>No submissions in this period.</p>'
 
-# Builder summary for the 2-week period
-if not two_week_df.empty:
-    builder_summary = two_week_df.groupby('Builder').agg(
-        completions=('Completion time', 'count'),
-        issues=('General Issues', lambda x: (x != '').sum())
-    ).reset_index()
-    builder_summary_table = builder_summary.to_html(classes='table table-striped', index=False)
-else:
-    builder_summary_table = '<p>No submissions in this period.</p>'
+builder_summary = two_week_df.groupby('Builder').agg(
+    completions=('Completion time', 'count'),
+    issues=('General Issues', lambda x: (x != '').sum())
+).reset_index() if not two_week_df.empty else pd.DataFrame(columns=['Builder', 'completions', 'issues'])
+builder_columns = ['Builder', 'completions', 'issues']
+builder_summary_table = generate_html_table(builder_summary, builder_columns)
 
-# Load Jinja2 template
-try:
-    with open('template.html') as f:
-        template = Template(f.read())
-except FileNotFoundError:
-    print("Error: template.html not found in the repository.")
-    raise
+# Templates
+base_template = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&D General Contracting - {{ page_title }}</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="M&D General Contracting_E4_Cropped.png" alt="M&D Logo" class="logo">
+        <h1>M&D General Contracting</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="full-data.html">Full Data</a></li>
+                <li><a href="user-summary.html">User Summary</a></li>
+                <li><a href="two-week-summary.html">2-Week Summary</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {{ content | safe }}
+    </main>
+</body>
+</html>
+"""
 
-# Render HTML
-html_content = template.render(
-    full_data_table=full_data_table,
-    latest_boom_table=latest_boom_table,
-    user_summary_table=user_summary_table,
-    current_period_start=current_period_start.strftime('%Y-%m-%d'),
-    current_period_end=current_period_end.strftime('%Y-%m-%d'),
-    daily_review_html=daily_review_html,
-    builder_summary_table=builder_summary_table
-)
-
-# Save to index.html
+# Home Page (Index)
+home_content = """
+<div class="summary">
+    <h2>Welcome</h2>
+    <p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p>
+</div>
+<h2>Latest Boom Lift Summary</h2>
+<div class="table-container">
+    {{ latest_boom_table | safe }}
+</div>
+"""
 with open('index.html', 'w') as f:
-    f.write(html_content)
+    f.write(Template(base_template).render(page_title='Home', content=home_content, latest_boom_table=latest_boom_table))
+
+# Full Data Page
+full_data_content = """
+<h2>Full Data</h2>
+<div class="table-container">
+    {{ full_data_table | safe }}
+</div>
+"""
+with open('full-data.html', 'w') as f:
+    f.write(Template(base_template).render(page_title='Full Data', content=full_data_content, full_data_table=full_data_table))
+
+# User Summary Page
+user_summary_content = """
+<h2>User Summary</h2>
+<div class="table-container">
+    {{ user_summary_table | safe }}
+</div>
+"""
+with open('user-summary.html', 'w') as f:
+    f.write(Template(base_template).render(page_title='User Summary', content=user_summary_content, user_summary_table=user_summary_table))
+
+# 2-Week Summary Page
+two_week_content = f"""
+<h2>2-Week Summary ({current_period_start.strftime('%Y-%m-%d')} to {current_period_end.strftime('%Y-%m-%d')})</h2>
+<h3>Daily Review</h3>
+<div class="daily-review">
+    {{ daily_review_html | safe }}
+</div>
+<h3>Builder Summary</h3>
+<div class="table-container">
+    {{ builder_summary_table | safe }}
+</div>
+"""
+with open('two-week-summary.html', 'w') as f:
+    f.write(Template(base_template).render(page_title='2-Week Summary', content=two_week_content, daily_review_html=daily_review_html, builder_summary_table=builder_summary_table))
