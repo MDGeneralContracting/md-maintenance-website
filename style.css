@@ -81,16 +81,19 @@ h2, h3, h4 {
 .table-container {
     margin: 0 auto 2rem auto; /* Center horizontally */
     max-width: 100%; /* Fit parent container */
-    width: 100%; /* Ensure full width */
+    width: 100%; /* Full width */
     overflow-x: auto; /* Allow horizontal scrolling if needed */
+    display: flex; /* Use flexbox to center contents */
+    justify-content: center; /* Center horizontally */
 }
 
-/* Ensure DataTables wrapper is centered */
+/* Ensure DataTables wrapper is centered and full-width */
 .dataTables_wrapper {
     margin: 0 auto;
-    width: 100%;
+    width: 100%; /* Match container width */
     max-width: 100%; /* Prevent overflow */
     text-align: left; /* Keep table content left-aligned */
+    display: inline-block; /* Allow centering within flex container */
 }
 
 .data-table {
@@ -127,6 +130,7 @@ h2, h3, h4 {
 .dataTables_wrapper .dataTables_filter {
     text-align: right;
     margin-bottom: 1rem;
+    width: 100%; /* Ensure filter spans container */
 }
 
 .dataTables_wrapper .dataTables_filter input {
@@ -138,6 +142,7 @@ h2, h3, h4 {
 
 .dataTables_wrapper .dataTables_length {
     margin-bottom: 1rem;
+    width: 100%; /* Ensure length selector spans container */
 }
 
 .dataTables_wrapper .dataTables_length select {
@@ -149,6 +154,7 @@ h2, h3, h4 {
 .dataTables_wrapper .dataTables_paginate {
     text-align: center;
     margin-top: 1rem;
+    width: 100%; /* Ensure pagination spans container */
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
