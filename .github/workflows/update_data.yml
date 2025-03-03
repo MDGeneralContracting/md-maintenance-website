@@ -1,0 +1,28 @@
+name: Update Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install pandas jinja2 requests openpyxl
+      - name: Run script
+        run: python generate_html.py
+        env:
+          EXCEL_URL: ${{ secrets.EXCEL_URL }}
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add index.html
+          git commit -m "Update data" || echo "No changes to commit"
+          git push
