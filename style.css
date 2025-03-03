@@ -6,100 +6,101 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
     line-height: 1.6;
-    background-color: #f4f4f4;
+    background-color: #f8f9fa;
     color: #333;
 }
 
 /* Header */
 header {
-    background-color: #0F4467; /* Company Blue */
-    color: white;
-    padding: 1rem;
+    background-color: #ffffff; /* White banner */
+    padding: 1.5rem;
     text-align: center;
-    border-bottom: 4px solid #B82025; /* Company Red */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 header .logo {
-    max-width: 150px;
+    max-width: 250px; /* Larger logo */
     height: auto;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 header h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    color: #0F4467; /* Company Blue */
+    margin-bottom: 1rem;
 }
 
 nav ul {
     list-style: none;
     display: flex;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 nav a {
-    color: white;
+    color: #0F4467;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 600;
     padding: 0.5rem 1rem;
-    transition: background-color 0.3s;
+    transition: color 0.3s, background-color 0.3s;
 }
 
 nav a:hover {
+    color: #ffffff;
     background-color: #B82025; /* Company Red */
     border-radius: 5px;
 }
 
 /* Main Content */
 main {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
 
 .summary {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
+    border-left: 5px solid #0F4467;
 }
 
 h2, h3, h4 {
     color: #0F4467;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-/* Tables */
+/* Tables (DataTables Styling) */
 .table-container {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 500px;
-    max-width: 100%;
     margin-bottom: 2rem;
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    background-color: #ffffff;
+    border-radius: 10px;
     overflow: hidden;
-}
-
-.data-table th, .data-table td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .data-table th {
-    background-color: #0F4467;
-    color: white;
-    font-weight: bold;
+    background-color: #0F4467; /* Company Blue */
+    color: #ffffff;
+    padding: 1rem;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
 }
 
 .data-table tr:nth-child(even) {
@@ -110,33 +111,72 @@ h2, h3, h4 {
     background-color: #f1f1f1;
 }
 
+/* DataTables Overrides */
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #0F4467;
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid #0F4467;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #0F4467 !important;
+    border: 1px solid #0F4467;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: #B82025 !important;
+    color: #ffffff !important;
+    border-color: #B82025;
+}
+
 /* Daily Review */
 .daily-review {
-    background-color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
+    border-left: 5px solid #0F4467;
 }
 
 .daily-review ul {
     list-style: disc;
     margin-left: 2rem;
+    color: #333;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     header h1 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    header .logo {
+        max-width: 200px;
     }
 
     nav ul {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 1rem;
     }
 
     .data-table th, .data-table td {
         font-size: 0.9rem;
         padding: 0.5rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {
+        width: 100%;
     }
 }
