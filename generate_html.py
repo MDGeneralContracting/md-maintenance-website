@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 # Download Excel file
 url = os.environ['EXCEL_URL']
-response = rescatuests.get(url, timeout=10)
+response = requests.get(url, timeout=10)
 response.raise_for_status()
 excel_data = BytesIO(response.content)
 
