@@ -71,7 +71,7 @@ for day in days:
             boom_lifts = name_group['Boom Lift ID'].tolist()
             submissions += f'<p><strong>{name}</strong>: {", ".join(boom_lifts)}</p>'
     else:
-        submissions = '<p>No submissions</p>'
+        submissions = '<p class="no-submissions">No submissions</p>'  # Added class
     daily_review_html += (
         f'<div class="calendar-day">'
         f'<h4>{day.strftime("%a, %b %d")}</h4>'
@@ -87,7 +87,7 @@ builder_summary = two_week_df.groupby('Builder').agg(
 builder_columns = ['Builder', 'completions', 'issues']
 builder_summary_table = generate_html_table(builder_summary, builder_columns, "builder-summary-table")
 
-# Base Template with DataTables CDN and Debug
+# Base Template with DataTables CDN
 base_template = """
 <!DOCTYPE html>
 <html lang="en">
