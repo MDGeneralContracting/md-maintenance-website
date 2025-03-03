@@ -3,6 +3,7 @@ name: Update Data
 on:
   schedule:
     - cron: '0 * * * *'  # Runs every hour
+  workflow_dispatch:     # Adds manual trigger option
 
 jobs:
   build:
