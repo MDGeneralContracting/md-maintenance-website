@@ -46,7 +46,7 @@ user_summary = df.groupby('Name').agg(
 user_columns = ['Name', 'submissions', 'latest_submission', 'issues']
 user_summary_table = generate_html_table(user_summary, user_columns)
 
-# 2-Week Summary
+# 2-Week Summary with Calendar Styling
 start_date = datetime(2024, 12, 30)
 today = datetime.now()
 days_diff = (today - start_date).days
@@ -59,21 +59,26 @@ two_week_df = df[
 ].copy()
 two_week_df['Date'] = two_week_df['Completion time'].dt.date
 
-daily_review_html = ''
-if not two_week_df.empty:
-    dates = sorted(two_week_df['Date'].unique(), reverse=True)
-    for date in dates:
-        daily_review_html += f'<h3>{date}</h3>'
-        date_group = two_week_df[two_week_df['Date'] == date]
-        for name, name_group in date_group.groupby('Name'):
-            daily_review_html += f'<h4>{name}</h4>'
+# Generate calendar for 2-week period
+daily_review_html = '<div class="calendar"><div class="calendar-grid">'
+days = [current_period_start + timedelta(days=i) for i in range(14)]
+for day in days:
+    day_str = day.strftime('%Y-%m-%d')
+    day_group = two_week_df[two_week_df['Date'] == day.date()]
+    submissions = ''
+    if not day_group.empty:
+        for name, name_group in day_group.groupby('Name'):
             boom_lifts = name_group['Boom Lift ID'].tolist()
-            daily_review_html += '<ul>'
-            for boom in boom_lifts:
-                daily_review_html += f'<li>{boom}</li>'
-            daily_review_html += '</ul>'
-else:
-    daily_review_html = '<p>No submissions in this period.</p>'
+            submissions += f'<p><strong>{name}</strong>: {", ".join(boom_lifts)}</p>'
+    else:
+        submissions = '<p>No submissions</p>'
+    daily_review_html += (
+        f'<div class="calendar-day">'
+        f'<h4>{day.strftime("%a, %b %d")}</h4>'
+        f'{submissions}'
+        f'</div>'
+    )
+daily_review_html += '</div></div>'
 
 builder_summary = two_week_df.groupby('Builder').agg(
     completions=('Completion time', 'count'),
@@ -149,7 +154,7 @@ pages = {
         'content': (
             f'<h2>2-Week Summary ({current_period_start.strftime("%Y-%m-%d")} to {current_period_end.strftime("%Y-%m-%d")})</h2>'
             '<h3>Daily Review</h3>'
-            '<div class="daily-review">' + daily_review_html + '</div>'
+            f'{daily_review_html}'
             '<h3>Builder Summary</h3>'
             '<div class="table-container">' + builder_summary_table + '</div>'
         )
