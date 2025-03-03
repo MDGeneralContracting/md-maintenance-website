@@ -8,14 +8,23 @@ from datetime import datetime, timedelta
 # Fetch Excel URL from environment variable (set in GitHub Secrets)
 url = os.environ['EXCEL_URL']
 
-# Download the Excel file
+# Download the Excel file with debugging
 try:
     response = requests.get(url, timeout=10)
     response.raise_for_status()  # Raise an error for bad HTTP status codes
     excel_data = BytesIO(response.content)
+    print(f"Downloaded {len(response.content)} bytes from {url}")
+    print(f"Content-Type: {response.headers.get('Content-Type')}")
+    # Save the first 100 bytes for inspection (as hex for non-text content)
+    print(f"First 100 bytes: {response.content[:100].hex()}")
 except requests.RequestException as e:
     print(f"Failed to download Excel file: {e}")
     raise
+
+# Verify the content looks like an Excel file (ZIP signature: PK\x03\x04)
+if not response.content.startswith(b'PK\x03\x04'):
+    print("Error: Downloaded content is not a valid ZIP-based Excel file (.xlsx).")
+    raise ValueError("Invalid Excel file format")
 
 # Read Sheet1 into a DataFrame with explicit engine
 try:
