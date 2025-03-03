@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 # Download Excel file
 url = os.environ['EXCEL_URL']
-response = requests.get(url, timeout=10)
+response = rescatuests.get(url, timeout=10)
 response.raise_for_status()
 excel_data = BytesIO(response.content)
 
@@ -15,14 +15,14 @@ excel_data = BytesIO(response.content)
 df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
 df['General Issues'] = df['General Issues'].fillna('')
 
-# Helper function to generate HTML table
+# Helper function to generate HTML table compatible with DataTables
 def generate_html_table(df, columns):
     headers = ''.join(f'<th>{col}</th>' for col in columns)
     rows = ''
     for _, row in df.iterrows():
         cells = ''.join(f'<td>{row[col]}</td>' for col in columns)
         rows += f'<tr>{cells}</tr>'
-    return f'<table class="data-table"><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
+    return f'<table class="data-table" id="data-table"><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
 
 # Full Data Table
 display_columns = [
@@ -82,7 +82,7 @@ builder_summary = two_week_df.groupby('Builder').agg(
 builder_columns = ['Builder', 'completions', 'issues']
 builder_summary_table = generate_html_table(builder_summary, builder_columns)
 
-# Base Template
+# Base Template with DataTables CDN
 base_template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -91,6 +91,9 @@ base_template = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M&D General Contracting - {{ page_title }}</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -113,7 +116,7 @@ base_template = """
 </html>
 """
 
-# Define page contents as fully rendered strings
+# Define page contents
 pages = {
     'index.html': {
         'page_title': 'Home',
