@@ -113,52 +113,43 @@ base_template = """
 </html>
 """
 
-# Define page contents with proper variable substitution
+# Define page contents as fully rendered strings
 pages = {
     'index.html': {
         'page_title': 'Home',
-        'content': f"""
-            <div class="summary">
-                <h2>Welcome</h2>
-                <p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p>
-            </div>
-            <h2>Latest Boom Lift Summary</h2>
-            <div class="table-container">
-                {latest_boom_table}
-            </div>
-        """
+        'content': (
+            '<div class="summary">'
+            '<h2>Welcome</h2>'
+            '<p>This website tracks boom lift information submitted daily by M&D General Contracting\'s installers, '
+            'providing real-time insights into equipment usage and maintenance needs.</p>'
+            '</div>'
+            '<h2>Latest Boom Lift Summary</h2>'
+            '<div class="table-container">' + latest_boom_table + '</div>'
+        )
     },
     'full-data.html': {
         'page_title': 'Full Data',
-        'content': f"""
-            <h2>Full Data</h2>
-            <div class="table-container">
-                {full_data_table}
-            </div>
-        """
+        'content': (
+            '<h2>Full Data</h2>'
+            '<div class="table-container">' + full_data_table + '</div>'
+        )
     },
     'user-summary.html': {
         'page_title': 'User Summary',
-        'content': f"""
-            <h2>User Summary</h2>
-            <div class="table-container">
-                {user_summary_table}
-            </div>
-        """
+        'content': (
+            '<h2>User Summary</h2>'
+            '<div class="table-container">' + user_summary_table + '</div>'
+        )
     },
     'two-week-summary.html': {
         'page_title': '2-Week Summary',
-        'content': f"""
-            <h2>2-Week Summary ({current_period_start.strftime('%Y-%m-%d')} to {current_period_end.strftime('%Y-%m-%d')})</h2>
-            <h3>Daily Review</h3>
-            <div class="daily-review">
-                {daily_review_html}
-            </div>
-            <h3>Builder Summary</h3>
-            <div class="table-container">
-                {builder_summary_table}
-            </div>
-        """
+        'content': (
+            f'<h2>2-Week Summary ({current_period_start.strftime("%Y-%m-%d")} to {current_period_end.strftime("%Y-%m-%d")})</h2>'
+            '<h3>Daily Review</h3>'
+            '<div class="daily-review">' + daily_review_html + '</div>'
+            '<h3>Builder Summary</h3>'
+            '<div class="table-container">' + builder_summary_table + '</div>'
+        )
     }
 }
 
