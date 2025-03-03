@@ -9,13 +9,22 @@ from datetime import datetime, timedelta
 url = os.environ['EXCEL_URL']
 
 # Download the Excel file
-response = requests.get(url)
-excel_data = BytesIO(response.content)
+try:
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()  # Raise an error for bad HTTP status codes
+    excel_data = BytesIO(response.content)
+except requests.RequestException as e:
+    print(f"Failed to download Excel file: {e}")
+    raise
 
-# Read Sheet1 into a DataFrame
-df = pd.read_excel(excel_data, sheet_name='Sheet1', parse_dates=['Completion time'])
+# Read Sheet1 into a DataFrame with explicit engine
+try:
+    df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
+except ValueError as e:
+    print(f"Error reading Excel file: {e}")
+    raise
 
-# Define columns to display (excluding Maintenance Work and Cost of Maintenance as they are not in Sheet1)
+# Define columns to display
 display_columns = [
     'Name', 'Boom Lift ID', 'Completion time', 'Builder', 'Site', 'Hours',
     'Oil Level', 'Gas Level', 'General Issues', 'Continue to Maintenance or Complete'
@@ -87,8 +96,12 @@ else:
     builder_summary_table = '<p>No submissions in this period.</p>'
 
 # Load Jinja2 template
-with open('template.html') as f:
-    template = Template(f.read())
+try:
+    with open('template.html') as f:
+        template = Template(f.read())
+except FileNotFoundError:
+    print("Error: template.html not found in the repository.")
+    raise
 
 # Render HTML
 html_content = template.render(
