@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M&D General Contracting - Home</title>
+    <title>M&D General Contracting - 2-Week Summary</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
@@ -23,13 +23,14 @@
     </header>
     <main>
         
-<div class="summary">
-    <h2>Welcome</h2>
-    <p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p>
+<h2>2-Week Summary (2025-02-24 to 2025-03-09)</h2>
+<h3>Daily Review</h3>
+<div class="daily-review">
+    { daily_review_html | safe }
 </div>
-<h2>Latest Boom Lift Summary</h2>
+<h3>Builder Summary</h3>
 <div class="table-container">
-    {{ latest_boom_table | safe }}
+    { builder_summary_table | safe }
 </div>
 
     </main>

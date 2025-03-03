@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M&D General Contracting - Home</title>
+    <title>M&D General Contracting - User Summary</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
@@ -23,13 +23,9 @@
     </header>
     <main>
         
-<div class="summary">
-    <h2>Welcome</h2>
-    <p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p>
-</div>
-<h2>Latest Boom Lift Summary</h2>
+<h2>User Summary</h2>
 <div class="table-container">
-    {{ latest_boom_table | safe }}
+    {{ user_summary_table | safe }}
 </div>
 
     </main>
