@@ -15,14 +15,14 @@ excel_data = BytesIO(response.content)
 df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
 df['General Issues'] = df['General Issues'].fillna('')
 
-# Helper function to generate HTML table compatible with DataTables
-def generate_html_table(df, columns):
+# Helper function to generate HTML table with unique ID
+def generate_html_table(df, columns, table_id):
     headers = ''.join(f'<th>{col}</th>' for col in columns)
     rows = ''
     for _, row in df.iterrows():
         cells = ''.join(f'<td>{row[col]}</td>' for col in columns)
         rows += f'<tr>{cells}</tr>'
-    return f'<table class="data-table" id="data-table"><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
+    return f'<table class="data-table" id="{table_id}"><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
 
 # Full Data Table
 display_columns = [
@@ -30,12 +30,12 @@ display_columns = [
     'Oil Level', 'Gas Level', 'General Issues', 'Continue to Maintenance or Complete'
 ]
 full_data_df = df[display_columns].sort_values('Completion time', ascending=False)
-full_data_table = generate_html_table(full_data_df, display_columns)
+full_data_table = generate_html_table(full_data_df, display_columns, "full-data-table")
 
 # Latest Boom Lift Summary
 boom_columns = ['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']
 latest_boom = df.sort_values('Completion time', ascending=False).drop_duplicates('Boom Lift ID').sort_values('Boom Lift ID')
-latest_boom_table = generate_html_table(latest_boom[boom_columns], boom_columns)
+latest_boom_table = generate_html_table(latest_boom[boom_columns], boom_columns, "latest-boom-table")
 
 # User Summary
 user_summary = df.groupby('Name').agg(
@@ -44,7 +44,7 @@ user_summary = df.groupby('Name').agg(
     issues=('General Issues', lambda x: (x != '').sum())
 ).reset_index().sort_values('Name')
 user_columns = ['Name', 'submissions', 'latest_submission', 'issues']
-user_summary_table = generate_html_table(user_summary, user_columns)
+user_summary_table = generate_html_table(user_summary, user_columns, "user-summary-table")
 
 # 2-Week Summary with Calendar Styling
 start_date = datetime(2024, 12, 30)
@@ -85,9 +85,9 @@ builder_summary = two_week_df.groupby('Builder').agg(
     issues=('General Issues', lambda x: (x != '').sum())
 ).reset_index() if not two_week_df.empty else pd.DataFrame(columns=['Builder', 'completions', 'issues'])
 builder_columns = ['Builder', 'completions', 'issues']
-builder_summary_table = generate_html_table(builder_summary, builder_columns)
+builder_summary_table = generate_html_table(builder_summary, builder_columns, "builder-summary-table")
 
-# Base Template with DataTables CDN
+# Base Template with DataTables CDN and Debug
 base_template = """
 <!DOCTYPE html>
 <html lang="en">
