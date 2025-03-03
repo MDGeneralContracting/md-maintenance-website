@@ -79,15 +79,18 @@ h2, h3, h4 {
 
 /* Tables (DataTables Styling) */
 .table-container {
-    margin: 0 auto 2rem auto; /* Center the container */
-    max-width: 100%; /* Ensure it fits the parent */
+    margin: 0 auto 2rem auto; /* Center horizontally */
+    max-width: 100%; /* Fit parent container */
+    width: 100%; /* Ensure full width */
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
 }
 
 /* Ensure DataTables wrapper is centered */
 .dataTables_wrapper {
     margin: 0 auto;
     width: 100%;
-    text-align: left; /* Keep text alignment left within table */
+    max-width: 100%; /* Prevent overflow */
+    text-align: left; /* Keep table content left-aligned */
 }
 
 .data-table {
@@ -97,6 +100,7 @@ h2, h3, h4 {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin: 0 auto; /* Center the table itself */
 }
 
 .data-table th {
@@ -120,10 +124,19 @@ h2, h3, h4 {
 }
 
 /* DataTables Overrides */
+.dataTables_wrapper .dataTables_filter {
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
 .dataTables_wrapper .dataTables_filter input {
     border: 1px solid #0F4467;
     border-radius: 5px;
     padding: 0.5rem;
+    width: 200px;
+}
+
+.dataTables_wrapper .dataTables_length {
     margin-bottom: 1rem;
 }
 
@@ -133,12 +146,18 @@ h2, h3, h4 {
     padding: 0.5rem;
 }
 
+.dataTables_wrapper .dataTables_paginate {
+    text-align: center;
+    margin-top: 1rem;
+}
+
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     color: #0F4467 !important;
     border: 1px solid #0F4467;
     border-radius: 5px;
     padding: 0.5rem 1rem;
     margin: 0 0.25rem;
+    text-decoration: none;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
@@ -150,12 +169,14 @@ h2, h3, h4 {
 /* Calendar Styling for 2-Week Summary */
 .calendar {
     margin-bottom: 2rem;
+    width: 100%;
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr); /* 7 days per week */
     gap: 1rem;
+    width: 100%;
 }
 
 .calendar-day {
