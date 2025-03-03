@@ -14,7 +14,7 @@ body {
 
 /* Header */
 header {
-    background-color: #ffffff; /* White banner */
+    background-color: #ffffff;
     padding: 1.5rem;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -24,14 +24,14 @@ header {
 }
 
 header .logo {
-    max-width: 250px; /* Larger logo */
+    max-width: 250px;
     height: auto;
     margin-bottom: 1rem;
 }
 
 header h1 {
     font-size: 2.5rem;
-    color: #0F4467; /* Company Blue */
+    color: #0F4467;
     margin-bottom: 1rem;
 }
 
@@ -52,7 +52,7 @@ nav a {
 
 nav a:hover {
     color: #ffffff;
-    background-color: #B82025; /* Company Red */
+    background-color: #B82025;
     border-radius: 5px;
 }
 
@@ -79,7 +79,15 @@ h2, h3, h4 {
 
 /* Tables (DataTables Styling) */
 .table-container {
-    margin-bottom: 2rem;
+    margin: 0 auto 2rem auto; /* Center the container */
+    max-width: 100%; /* Ensure it fits the parent */
+}
+
+/* Ensure DataTables wrapper is centered */
+.dataTables_wrapper {
+    margin: 0 auto;
+    width: 100%;
+    text-align: left; /* Keep text alignment left within table */
 }
 
 .data-table {
@@ -92,7 +100,7 @@ h2, h3, h4 {
 }
 
 .data-table th {
-    background-color: #0F4467; /* Company Blue */
+    background-color: #0F4467;
     color: #ffffff;
     padding: 1rem;
     text-align: left;
@@ -139,19 +147,34 @@ h2, h3, h4 {
     border-color: #B82025;
 }
 
-/* Daily Review */
-.daily-review {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+/* Calendar Styling for 2-Week Summary */
+.calendar {
     margin-bottom: 2rem;
-    border-left: 5px solid #0F4467;
 }
 
-.daily-review ul {
-    list-style: disc;
-    margin-left: 2rem;
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 days per week */
+    gap: 1rem;
+}
+
+.calendar-day {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    min-height: 150px;
+    border: 1px solid #0F4467;
+}
+
+.calendar-day h4 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #0F4467;
+}
+
+.calendar-day p {
+    font-size: 0.9rem;
     color: #333;
 }
 
@@ -178,5 +201,9 @@ h2, h3, h4 {
     .dataTables_wrapper .dataTables_filter input,
     .dataTables_wrapper .dataTables_length select {
         width: 100%;
+    }
+
+    .calendar-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
     }
 }
