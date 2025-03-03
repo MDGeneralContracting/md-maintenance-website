@@ -2,8 +2,8 @@ name: Update Data
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Runs every 5 minutes (adjust as needed)
-  workflow_dispatch:       # Allows manual triggering
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # Explicitly use GITHUB_TOKEN
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -31,6 +31,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add index.html
+          git add index.html full-data.html user-summary.html two-week-summary.html
           git commit -m "Update data" || echo "No changes to commit"
           git push
