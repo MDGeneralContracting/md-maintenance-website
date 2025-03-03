@@ -82,7 +82,7 @@ builder_summary = two_week_df.groupby('Builder').agg(
 builder_columns = ['Builder', 'completions', 'issues']
 builder_summary_table = generate_html_table(builder_summary, builder_columns)
 
-# Templates
+# Base Template
 base_template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -107,57 +107,64 @@ base_template = """
         </nav>
     </header>
     <main>
-        {{ content | safe }}
+        {{ content }}
     </main>
 </body>
 </html>
 """
 
-# Home Page (Index)
-home_content = """
-<div class="summary">
-    <h2>Welcome</h2>
-    <p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p>
-</div>
-<h2>Latest Boom Lift Summary</h2>
-<div class="table-container">
-    {{ latest_boom_table | safe }}
-</div>
-"""
-with open('index.html', 'w') as f:
-    f.write(Template(base_template).render(page_title='Home', content=home_content, latest_boom_table=latest_boom_table))
+# Define page contents with proper variable substitution
+pages = {
+    'index.html': {
+        'page_title': 'Home',
+        'content': f"""
+            <div class="summary">
+                <h2>Welcome</h2>
+                <p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p>
+            </div>
+            <h2>Latest Boom Lift Summary</h2>
+            <div class="table-container">
+                {latest_boom_table}
+            </div>
+        """
+    },
+    'full-data.html': {
+        'page_title': 'Full Data',
+        'content': f"""
+            <h2>Full Data</h2>
+            <div class="table-container">
+                {full_data_table}
+            </div>
+        """
+    },
+    'user-summary.html': {
+        'page_title': 'User Summary',
+        'content': f"""
+            <h2>User Summary</h2>
+            <div class="table-container">
+                {user_summary_table}
+            </div>
+        """
+    },
+    'two-week-summary.html': {
+        'page_title': '2-Week Summary',
+        'content': f"""
+            <h2>2-Week Summary ({current_period_start.strftime('%Y-%m-%d')} to {current_period_end.strftime('%Y-%m-%d')})</h2>
+            <h3>Daily Review</h3>
+            <div class="daily-review">
+                {daily_review_html}
+            </div>
+            <h3>Builder Summary</h3>
+            <div class="table-container">
+                {builder_summary_table}
+            </div>
+        """
+    }
+}
 
-# Full Data Page
-full_data_content = """
-<h2>Full Data</h2>
-<div class="table-container">
-    {{ full_data_table | safe }}
-</div>
-"""
-with open('full-data.html', 'w') as f:
-    f.write(Template(base_template).render(page_title='Full Data', content=full_data_content, full_data_table=full_data_table))
-
-# User Summary Page
-user_summary_content = """
-<h2>User Summary</h2>
-<div class="table-container">
-    {{ user_summary_table | safe }}
-</div>
-"""
-with open('user-summary.html', 'w') as f:
-    f.write(Template(base_template).render(page_title='User Summary', content=user_summary_content, user_summary_table=user_summary_table))
-
-# 2-Week Summary Page
-two_week_content = f"""
-<h2>2-Week Summary ({current_period_start.strftime('%Y-%m-%d')} to {current_period_end.strftime('%Y-%m-%d')})</h2>
-<h3>Daily Review</h3>
-<div class="daily-review">
-    {{ daily_review_html | safe }}
-</div>
-<h3>Builder Summary</h3>
-<div class="table-container">
-    {{ builder_summary_table | safe }}
-</div>
-"""
-with open('two-week-summary.html', 'w') as f:
-    f.write(Template(base_template).render(page_title='2-Week Summary', content=two_week_content, daily_review_html=daily_review_html, builder_summary_table=builder_summary_table))
+# Generate each page
+template = Template(base_template)
+for filename, data in pages.items():
+    html_content = template.render(page_title=data['page_title'], content=data['content'])
+    with open(filename, 'w') as f:
+        f.write(html_content)
