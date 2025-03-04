@@ -328,7 +328,115 @@ h2, h3, h4 {
     }
 }
 
-#boom-lift-form input[type="number"] {
-    -webkit-appearance: textfield; /* Ensures numeric keypad on mobile */
-    -moz-appearance: textfield;
+/* Form Styling */
+#boom-lift-form {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    max-width: 800px; /* Larger width */
+    margin: 2rem auto;
+    border: 1px solid #e0e0e0;
+}
+
+#boom-lift-form label {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: #0F4467;
+    font-weight: 600;
+    font-size: 1.2rem; /* Larger labels */
+}
+
+#boom-lift-form input[type="text"],
+#boom-lift-form input[type="number"],
+#boom-lift-form select,
+#boom-lift-form textarea {
+    width: 100%;
+    padding: 1rem; /* Larger padding */
+    margin-bottom: 1.5rem;
+    border: 2px solid #0F4467;
+    border-radius: 8px;
+    font-size: 1.1rem; /* Larger text */
+    background-color: #f9f9f9;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#boom-lift-form input[type="text"]:focus,
+#boom-lift-form input[type="number"]:focus,
+#boom-lift-form select:focus,
+#boom-lift-form textarea:focus {
+    border-color: #B82025;
+    box-shadow: 0 0 8px rgba(184, 32, 37, 0.3);
+    outline: none;
+}
+
+#boom-lift-form textarea {
+    height: 120px; /* Larger textarea */
+    resize: vertical;
+}
+
+#boom-lift-form input[type="checkbox"] {
+    margin-right: 0.5rem;
+    transform: scale(1.5); /* Larger checkbox */
+}
+
+#boom-lift-form button[type="submit"] {
+    background-color: #0F4467;
+    color: #ffffff;
+    padding: 1rem 2rem; /* Larger button */
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#boom-lift-form button[type="submit"]:hover {
+    background-color: #B82025;
+    transform: translateY(-2px);
+}
+
+#boom-lift-form button[type="button"] { /* For "Use My Location" buttons */
+    background-color: #e6eef5;
+    color: #0F4467;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #0F4467;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#boom-lift-form button[type="button"]:hover {
+    background-color: #d0d7de;
+}
+
+#submission-message {
+    color: #0F4467;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    #boom-lift-form {
+        padding: 1.5rem;
+        max-width: 100%;
+    }
+    #boom-lift-form label {
+        font-size: 1rem;
+    }
+    #boom-lift-form input[type="text"],
+    #boom-lift-form input[type="number"],
+    #boom-lift-form select,
+    #boom-lift-form textarea {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    #boom-lift-form button[type="submit"] {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+    }
 }
