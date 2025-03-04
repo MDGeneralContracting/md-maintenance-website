@@ -94,7 +94,7 @@ $(document).ready(function() {
         );
     };
 
-    // Form submission to GitHub API
+    // Form submission to GitHub API with PAT
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
         const role = $('#role').val();
@@ -106,9 +106,9 @@ $(document).ready(function() {
             return obj;
         }, {});
 
-        const githubToken = 'YOUR_GITHUB_PERSONAL_ACCESS_TOKEN'; // Replace with your PAT (secure later)
-        const repoOwner = 'your-username';
-        const repoName = 'your-repo';
+        const githubToken = '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'; // Replace with your actual PAT
+        const repoOwner = 'MDGeneralContracting'; // Replace with your GitHub username
+        const repoName = 'md-maintenance-website'; // Replace with your repository name
 
         $.ajax({
             url: `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`,
@@ -129,6 +129,7 @@ $(document).ready(function() {
                 toggleForm();
             },
             error: function(xhr, status, error) {
+                console.error('Submission error:', xhr.responseJSON);
                 alert('Submission failed: ' + (xhr.responseJSON?.message || error));
             }
         });
