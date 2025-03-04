@@ -122,7 +122,7 @@ $(document).ready(function() {
     });
     console.log('Raw form data:', formData);
 
-    const githubToken = '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'; // Replace with your PAT
+    const githubToken = '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'; // Replace with your PAT
     const repoOwner = 'MDGeneralContracting';
     const repoName = 'md-maintenance-website';
     const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`;
