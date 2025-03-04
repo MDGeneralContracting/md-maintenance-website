@@ -248,10 +248,7 @@ for i, start_date in enumerate(recent_start_dates):
         <div class="table-container">{builder_summary_table}</div>
     """
     filename = f"two-week-summary-{start_date.strftime('%Y-%m-%d')}.html"
-    current_start_date = start_date.strftime('%Y-%m-%d')  # Set to this page’s period
-    if i == 0:  # Current period for two-week-summary.html
-        latest_start_date = current_start_date
-        current_content = content
+    current_start_date = start_date.strftime('%Y-%m-%d')  # Specific to this page
     
     html_content = Template(base_template_with_dropdown).render(
         page_title=f'2-Week Summary ({start_date.strftime("%Y-%m-%d")})',
@@ -265,6 +262,16 @@ for i, start_date in enumerate(recent_start_dates):
 
 # Save the current period to two-week-summary.html
 print("Generating file: two-week-summary.html")
+latest_start_date = recent_start_dates[0].strftime('%Y-%m-%d')  # Current period
+daily_review_html, builder_summary_table = generate_pay_period_summary(recent_start_dates[0])
+end_date = recent_start_dates[0] + timedelta(days=13)
+current_content = f"""
+    <h2>2-Week Summary ({latest_start_date} to {end_date.strftime('%Y-%m-%d')})</h2>
+    <h3>Daily Review</h3>
+    {daily_review_html}
+    <h3>Builder Summary</h3>
+    <div class="table-container">{builder_summary_table}</div>
+"""
 with open('two-week-summary.html', 'w') as f:
     f.write(Template(base_template_with_dropdown).render(
         page_title='2-Week Summary (Current)',
