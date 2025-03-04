@@ -95,6 +95,7 @@ $(document).ready(function() {
     // Form submission with success message and redirect
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
+        console.log('Form submission triggered'); // Add this line
         const role = $('#role').val();
         const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
         $(completionTimeField).val(new Date().toISOString());
