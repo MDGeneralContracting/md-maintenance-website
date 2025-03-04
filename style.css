@@ -135,13 +135,15 @@ h2, h3, h4 {
 }
 
 /* Warning Styles */
-.oil-change-warning td:nth-child(10) { /* Hours Since Oil Change is 10th column (index 9) */
-    background-color: #fff3cd; /* Light yellow */
+.oil-change-warning {
+    background-color: #ff0000; /* Red for > 250 hours */
+    color: #ffffff;
     font-weight: bold;
 }
 
 .inspection-warning {
-    background-color: #f8d7da; /* Light red */
+    background-color: #ff0000; /* Red for > 10 months */
+    color: #ffffff;
     font-weight: bold;
     position: relative;
 }
