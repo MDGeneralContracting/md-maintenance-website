@@ -46,8 +46,10 @@ def generate_html_table(df, columns, table_id):
 
 # Full Data Table with Maintenance Columns
 display_columns = [
-    'Completion time', 'Name', 'Boom Lift ID', 'Hours', 'Oil Level', 'Gas Level',
-    'General Issues', 'Maintenance Work', 'Cost of Maintenance'
+    'Completion time', 'Name', 'Boom Lift ID', 'Builder', 'Site', 'Location', 'Hours', 
+    'Oil Level', 'Gas Level', 'General Issues', 'Maintenance Work', 
+    'Oil Change', 'Oil Change Cost', 'Annual Inspection', 'Annual Inspection Cost', 
+    'NDT', 'NDT Cost', 'Radiator Repair', 'Radiator Repair Cost', 'Other Work', 'Other Work Cost'
 ]
 full_data_df = valid_df[display_columns].sort_values('Completion time', ascending=False)
 full_data_table = generate_html_table(full_data_df, display_columns, "full-data-table")
@@ -57,6 +59,7 @@ boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
     'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 'Annual Inspection'
 ]
+
 boom_lift_summary = pd.DataFrame({'Boom Lift ID': valid_boom_lifts})
 current_status = valid_df.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
 last_maintenance = valid_df[valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '')].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
