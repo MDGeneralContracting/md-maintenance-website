@@ -26,7 +26,7 @@ $(document).ready(function() {
         latestHours[data[boom_columns.indexOf('Boom Lift ID')]] = parseInt(data[boom_columns.indexOf('Hours')]) || 0;
     });
 
-    // Form toggling
+    // Form toggling and other functions (unchanged)
     window.toggleForm = function() {
         const role = $('#role').val();
         $('#installer-form').toggle(role === 'installer');
@@ -40,7 +40,6 @@ $(document).ready(function() {
         }
     };
 
-    // Builder "Other" toggling
     window.toggleOtherBuilder = function() {
         $('#other-builder').toggle($('#builder').val() === 'Other');
     };
@@ -48,7 +47,6 @@ $(document).ready(function() {
         $('#mechanic-other-builder').toggle($('#mechanic-builder').val() === 'Other');
     };
 
-    // Maintenance cost toggling
     window.toggleOilChangeCost = function() {
         $('#oil-change-cost').toggle($('#oil-change').is(':checked'));
     };
@@ -65,7 +63,6 @@ $(document).ready(function() {
         $('#other-work-cost').toggle($('#other-work').val().trim() !== '');
     };
 
-    // Hours validation
     window.updateHoursValidation = function() {
         const boomId = $('#boom-lift-id').val() || $('#mechanic-boom-lift-id').val();
         const minHours = latestHours[boomId] || 0;
@@ -78,7 +75,6 @@ $(document).ready(function() {
         });
     };
 
-    // Geolocation
     window.getGeolocation = function() {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -98,32 +94,47 @@ $(document).ready(function() {
         );
     };
 
-    // Form submission
+    // Form submission to GitHub API
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
         const role = $('#role').val();
         const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
         $(completionTimeField).val(new Date().toISOString());
 
+        const formData = $(this).serializeArray().reduce((obj, item) => {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+
+        const githubToken = 'YOUR_GITHUB_PERSONAL_ACCESS_TOKEN'; // Replace with your PAT (secure later)
+        const repoOwner = 'your-username';
+        const repoName = 'your-repo';
+
         $.ajax({
-            url: 'https://formspree.io/f/mbldnvgr', // Correct url
+            url: `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`,
             method: 'POST',
-            data: $(this).serialize(),
-            dataType: 'json',
+            headers: {
+                'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github+json',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                event_type: 'form_submission',
+                client_payload: formData
+            }),
             success: function() {
                 $('#submission-message').show();
                 setTimeout(() => $('#submission-message').hide(), 3000);
                 $('#boom-lift-form')[0].reset();
                 toggleForm();
             },
-            error: function() {
-                alert('Submission failed. Please try again.');
+            error: function(xhr, status, error) {
+                alert('Submission failed: ' + (xhr.responseJSON?.message || error));
             }
         });
     });
 });
 
-// Define boom_columns (unchanged)
 const boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
     'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 'Annual Inspection'
