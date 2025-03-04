@@ -327,3 +327,8 @@ h2, h3, h4 {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+#boom-lift-form input[type="number"] {
+    -webkit-appearance: textfield; /* Ensures numeric keypad on mobile */
+    -moz-appearance: textfield;
+}
