@@ -135,7 +135,7 @@ h2, h3, h4 {
 }
 
 /* Warning Styles */
-.oil-change-warning td:nth-child(9) { /* Hours Since Oil Change is 9th column (index 8) */
+.oil-change-warning td:nth-child(10) { /* Hours Since Oil Change is 10th column (index 9) */
     background-color: #fff3cd; /* Light yellow */
     font-weight: bold;
 }
