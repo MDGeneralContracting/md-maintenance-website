@@ -57,26 +57,51 @@ full_data_table = generate_html_table(full_data_df, display_columns, "full-data-
 # Boom Lift Summary
 boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
-    'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 'Annual Inspection'
+    'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 
+    'Annual Inspection', 'NDT', 'Radiator Repair'
 ]
-
 boom_lift_summary = pd.DataFrame({'Boom Lift ID': valid_boom_lifts})
 current_status = valid_df.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
-last_maintenance = valid_df[valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '')].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+
+# Last Maintenance (any maintenance work)
+last_maintenance = valid_df[
+    valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '') |
+    valid_df['Oil Change'] | valid_df['Annual Inspection'] | valid_df['NDT'] | valid_df['Radiator Repair']
+].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
 last_maintenance['Last Maintenance'] = last_maintenance['Completion time'].dt.strftime('%Y-%m-%d')
-oil_changes = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('oil change', na=False)].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
-oil_changes['Oil Change'] = oil_changes['Hours'].astype(int)  # Hours at last oil change
-oil_changes['Oil Change Hours'] = oil_changes['Hours'].astype(int)  # Temporary for calculation
-annual_inspections = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('annual inspection', na=False)].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
-annual_inspections['Annual Inspection'] = annual_inspections['Completion time'].dt.strftime('%Y-%m-%d')  # Use date instead of hours
+
+# Oil Change Tracking
+oil_changes = valid_df[valid_df['Oil Change']].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+oil_changes['Oil Change'] = oil_changes['Completion time'].dt.strftime('%Y-%m-%d')
+oil_changes['Oil Change Hours'] = oil_changes['Hours'].astype(int)
+
+# Annual Inspection Tracking
+annual_inspections = valid_df[valid_df['Annual Inspection']].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+annual_inspections['Annual Inspection'] = annual_inspections['Completion time'].dt.strftime('%Y-%m-%d')
+
+# NDT Tracking
+ndt = valid_df[valid_df['NDT']].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+ndt['NDT'] = ndt['Completion time'].dt.strftime('%Y-%m-%d')
+
+# Radiator Repair Tracking
+radiator_repairs = valid_df[valid_df['Radiator Repair']].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+radiator_repairs['Radiator Repair'] = radiator_repairs['Completion time'].dt.strftime('%Y-%m-%d')
 
 # Merge data into summary
 boom_lift_summary = boom_lift_summary.merge(
     current_status[['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']],
     on='Boom Lift ID', how='left'
-).merge(last_maintenance[['Boom Lift ID', 'Last Maintenance']], on='Boom Lift ID', how='left').merge(
+).merge(
+    last_maintenance[['Boom Lift ID', 'Last Maintenance']], on='Boom Lift ID', how='left'
+).merge(
     oil_changes[['Boom Lift ID', 'Oil Change', 'Oil Change Hours']], on='Boom Lift ID', how='left'
-).merge(annual_inspections[['Boom Lift ID', 'Annual Inspection']], on='Boom Lift ID', how='left')
+).merge(
+    annual_inspections[['Boom Lift ID', 'Annual Inspection']], on='Boom Lift ID', how='left'
+).merge(
+    ndt[['Boom Lift ID', 'NDT']], on='Boom Lift ID', how='left'
+).merge(
+    radiator_repairs[['Boom Lift ID', 'Radiator Repair']], on='Boom Lift ID', how='left'
+)
 
 # Calculate Hours Since Oil Change
 boom_lift_summary['Hours Since Oil Change'] = boom_lift_summary.apply(
@@ -88,12 +113,11 @@ boom_lift_summary['Hours Since Oil Change'] = boom_lift_summary.apply(
 boom_lift_summary['Completion time'] = boom_lift_summary['Completion time'].apply(
     lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else 'No Data Available'
 )
-for col in ['Name', 'Oil Level', 'Gas Level', 'General Issues', 'Last Maintenance', 'Annual Inspection']:
+for col in ['Name', 'Oil Level', 'Gas Level', 'General Issues', 'Last Maintenance', 'Oil Change', 'Annual Inspection', 'NDT', 'Radiator Repair']:
     boom_lift_summary[col] = boom_lift_summary[col].fillna('No Data Available')
-for col in ['Hours', 'Oil Change']:
-    boom_lift_summary[col] = boom_lift_summary[col].apply(
-        lambda x: int(x) if pd.notnull(x) else 'No Data Available'
-    )
+boom_lift_summary['Hours'] = boom_lift_summary['Hours'].apply(
+    lambda x: int(x) if pd.notnull(x) else 'No Data Available'
+)
 
 # Generate the table
 latest_boom_table = generate_html_table(boom_lift_summary[boom_columns], boom_columns, "latest-boom-table")
@@ -193,6 +217,7 @@ base_template_no_dropdown = """
                 <li><a href="full-data.html">Full Data</a></li>
                 <li><a href="user-summary.html">User Summary</a></li>
                 <li><a href="two-week-summary.html">2-Week Summary</a></li>
+                <li><a href="submit.html">Submit Data</a></li>
             </ul>
         </nav>
     </header>
@@ -227,6 +252,7 @@ base_template_with_dropdown = """
                 <li><a href="full-data.html">Full Data</a></li>
                 <li><a href="user-summary.html">User Summary</a></li>
                 <li><a href="two-week-summary.html">2-Week Summary</a></li>
+                <li><a href="submit.html">Submit Data</a></li>
             </ul>
         </nav>
     </header>
