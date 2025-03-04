@@ -14,6 +14,8 @@ excel_data = BytesIO(response.content)
 # Read Sheet1
 df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
 df['General Issues'] = df['General Issues'].fillna('')
+df['Maintenance Work'] = df['Maintenance Work'].fillna('')  # Ensure no NaN
+df['Cost of Maintenance'] = df['Cost of Maintenance'].fillna(0)  # Default to 0 if missing
 
 # Helper function to generate HTML table with unique ID
 def generate_html_table(df, columns, table_id):
@@ -24,17 +26,44 @@ def generate_html_table(df, columns, table_id):
         rows += f'<tr>{cells}</tr>'
     return f'<table class="data-table" id="{table_id}"><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
 
-# Full Data Table
+# Full Data Table with Maintenance Columns
 display_columns = [
     'Name', 'Boom Lift ID', 'Completion time', 'Builder', 'Site', 'Hours',
-    'Oil Level', 'Gas Level', 'General Issues', 'Continue to Maintenance or Complete'
+    'Oil Level', 'Gas Level', 'General Issues', 'Continue to Maintenance or Complete',
+    'Maintenance Work', 'Cost of Maintenance'
 ]
 full_data_df = df[display_columns].sort_values('Completion time', ascending=False)
 full_data_table = generate_html_table(full_data_df, display_columns, "full-data-table")
 
-# Latest Boom Lift Summary
-boom_columns = ['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']
+# Latest Boom Lift Summary with Maintenance Parsing
+boom_columns = [
+    'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 
+    'General Issues', 'Last Maintenance', 'Oil Change', 'Annual Inspection'
+]
 latest_boom = df.sort_values('Completion time', ascending=False).drop_duplicates('Boom Lift ID').sort_values('Boom Lift ID')
+
+# Parse Maintenance Work for Oil Change and Annual Inspection
+def parse_maintenance(row):
+    maintenance = row['Maintenance Work']
+    hours = row['Hours']
+    completion_time = row['Completion time']
+    last_maintenance = completion_time.strftime('%Y-%m-%d') if maintenance else ''
+    oil_change = ''
+    annual_inspection = ''
+    if maintenance:
+        items = [item.strip() for item in maintenance.split(';')]
+        for item in items:
+            if 'Oil Change' in item:
+                oil_change = hours  # Use hours at this submission
+            elif 'Annual Inspection' in item:
+                annual_inspection = hours
+    return pd.Series([last_maintenance, oil_change, annual_inspection], 
+                     index=['Last Maintenance', 'Oil Change', 'Annual Inspection'])
+
+# Apply parsing to latest_boom
+maintenance_data = latest_boom.apply(parse_maintenance, axis=1)
+latest_boom = pd.concat([latest_boom[['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']], 
+                         maintenance_data], axis=1)
 latest_boom_table = generate_html_table(latest_boom[boom_columns], boom_columns, "latest-boom-table")
 
 # User Summary
@@ -59,7 +88,6 @@ two_week_df = df[
 ].copy()
 two_week_df['Date'] = two_week_df['Completion time'].dt.date
 
-# Generate calendar for 2-week period
 daily_review_html = '<div class="calendar"><div class="calendar-grid">'
 days = [current_period_start + timedelta(days=i) for i in range(14)]
 for day in days:
@@ -71,7 +99,7 @@ for day in days:
             boom_lifts = name_group['Boom Lift ID'].tolist()
             submissions += f'<p><strong>{name}</strong>: {", ".join(boom_lifts)}</p>'
     else:
-        submissions = '<p class="no-submissions">No submissions</p>'  # Added class
+        submissions = '<p class="no-submissions">No submissions</p>'
     daily_review_html += (
         f'<div class="calendar-day">'
         f'<h4>{day.strftime("%a, %b %d")}</h4>'
