@@ -5,29 +5,32 @@ from io import BytesIO
 from jinja2 import Template
 from datetime import datetime, timedelta
 
-# Download Excel file from environment variable URL
-url = os.environ['EXCEL_URL']
-response = requests.get(url, timeout=10)
+# GitHub raw CSV URL
+CSV_URL = 'https://raw.githubusercontent.com/your-username/your-repo/main/data/boom_lift_data.csv'
+response = requests.get(CSV_URL, timeout=10)
 response.raise_for_status()
-excel_data = BytesIO(response.content)
+df = pd.read_csv(pd.io.common.StringIO(response.text), parse_dates=['Completion time'])
 
-# Read 'Sheet1' from the Excel file
-df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
+# Fill missing values
 df['General Issues'] = df['General Issues'].fillna('')
 df['Maintenance Work'] = df['Maintenance Work'].fillna('')
-df['Cost of Maintenance'] = df['Cost of Maintenance'].fillna(0)
+df['Oil Change'] = df['Oil Change'].fillna(False)
+df['Annual Inspection'] = df['Annual Inspection'].fillna(False)
+df['NDT'] = df['NDT'].fillna(False)
+df['Radiator Repair'] = df['Radiator Repair'].fillna(False)
+df['Other Work'] = df['Other Work'].fillna('')
+for col in ['Oil Change Cost', 'Annual Inspection Cost', 'NDT Cost', 'Radiator Repair Cost', 'Other Work Cost', 'Cost of Maintenance']:
+    df[col] = df[col].fillna(0)
 
-# Define valid boom lift IDs
+# Define valid boom lift IDs (unchanged)
 valid_boom_lifts = [
     'B_GNE_001', 'B_GNE_002', 'B_GNE_003', 'B_GNE_004',
     'B_GNE_005', 'B_GNE_006', 'B_GNE_007', 'B_GNE_008',
     'B_JLG_001', 'B_SNK_001'
 ]
 
-# Filter dataframe to only include valid boom lift IDs
+# Filter dataframe
 valid_df = df[df['Boom Lift ID'].isin(valid_boom_lifts)].copy()
-
-# Convert 'Hours' to integer where possible
 valid_df['Hours'] = valid_df['Hours'].apply(lambda x: int(x) if pd.notnull(x) else 0)
 
 # Helper function to generate HTML table with a unique ID
