@@ -25,7 +25,43 @@
         </nav>
     </header>
     <main>
-        <div class="summary"><h2>Welcome</h2><p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p></div><h2>Latest Boom Lift Summary</h2><div class="table-container"><table class="data-table" id="latest-boom-table"><thead><tr><th>Boom Lift ID</th><th>Completion time</th><th>Name</th><th>Hours</th><th>Oil Level</th><th>Gas Level</th><th>General Issues</th><th>Last Maintenance</th><th>Oil Change</th><th>Annual Inspection</th></tr></thead><tbody><tr><td>B_GNE_001</td><td>2025-02-24</td><td>Martin Pejic</td><td>4998</td><td>Sufficient</td><td>Low</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_002</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_003</td><td>2025-03-03</td><td>Hiso</td><td>7344</td><td>Sufficient</td><td>Low</td><td></td><td>2025-03-03</td><td>7344</td><td>No Data Available</td></tr><tr><td>B_GNE_004</td><td>2025-02-20</td><td>Ivan Pejic</td><td>54582</td><td>Sufficient</td><td>Full</td><td>Broken dipstick</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_005</td><td>2024-11-25</td><td>Mario Pejic</td><td>9536</td><td>Sufficient</td><td>Full</td><td>Slow moving </td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_006</td><td>2025-02-24</td><td>Nikola Rotim</td><td>6858</td><td>Sufficient</td><td>Half</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_007</td><td>2025-03-03</td><td>His </td><td>8447</td><td>Low</td><td>Low</td><td></td><td>2025-03-03</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_008</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_JLG_001</td><td>2025-02-14</td><td>Ivan</td><td>2855</td><td>High</td><td>Half</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_SNK_001</td><td>2025-02-28</td><td>Nikola Rotim </td><td>4420</td><td>Sufficient</td><td>Full</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr></tbody></table></div>
+        <div class="pay-period-selector">
+            <label for="pay-period-select">Select Pay Period: </label>
+            <select id="pay-period-select">
+                
+                <option value="two-week-summary-2025-02-24.html"
+                        selected>
+                    2025-02-24 to 2025-03-09
+                </option>
+                
+                <option value="two-week-summary-2025-02-10.html"
+                        >
+                    2025-02-10 to 2025-02-23
+                </option>
+                
+                <option value="two-week-summary-2025-01-27.html"
+                        >
+                    2025-01-27 to 2025-02-09
+                </option>
+                
+                <option value="two-week-summary-2025-01-13.html"
+                        >
+                    2025-01-13 to 2025-01-26
+                </option>
+                
+                <option value="two-week-summary-2024-12-30.html"
+                        >
+                    2024-12-30 to 2025-01-12
+                </option>
+                
+            </select>
+            <script>
+                document.getElementById('pay-period-select').addEventListener('change', function() {
+                    window.location.href = this.value;
+                });
+            </script>
+        </div>
+        <div class="summary"><h2>Welcome</h2><p>This website tracks boom lift information submitted daily by M&D General Contracting's installers, providing real-time insights into equipment usage and maintenance needs.</p></div><h2>Latest Boom Lift Summary</h2><div class="table-container"><table class="data-table" id="latest-boom-table"><thead><tr><th>Boom Lift ID</th><th>Completion time</th><th>Name</th><th>Hours</th><th>Oil Level</th><th>Gas Level</th><th>General Issues</th><th>Last Maintenance</th><th>Oil Change</th><th>Annual Inspection</th></tr></thead><tbody><tr><td>B_GNE_001</td><td>2025-02-24</td><td>Martin Pejic</td><td>4998</td><td>Sufficient</td><td>Low</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_002</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_003</td><td>2025-03-03</td><td>Hiso</td><td>7344</td><td>Sufficient</td><td>Low</td><td></td><td>2025-03-03</td><td>7344</td><td>7344</td></tr><tr><td>B_GNE_004</td><td>2025-02-20</td><td>Ivan Pejic</td><td>54582</td><td>Sufficient</td><td>Full</td><td>Broken dipstick</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_005</td><td>2024-11-25</td><td>Mario Pejic</td><td>9536</td><td>Sufficient</td><td>Full</td><td>Slow moving </td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_006</td><td>2025-02-24</td><td>Nikola Rotim</td><td>6858</td><td>Sufficient</td><td>Half</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_GNE_007</td><td>2025-03-03</td><td>His </td><td>8447</td><td>Low</td><td>Low</td><td></td><td>2025-03-03</td><td>No Data Available</td><td>8447</td></tr><tr><td>B_GNE_008</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_JLG_001</td><td>2025-02-14</td><td>Ivan</td><td>2855</td><td>High</td><td>Half</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr><tr><td>B_SNK_001</td><td>2025-02-28</td><td>Nikola Rotim </td><td>4420</td><td>Sufficient</td><td>Full</td><td></td><td>No Data Available</td><td>No Data Available</td><td>No Data Available</td></tr></tbody></table></div>
     </main>
 </body>
 </html>
