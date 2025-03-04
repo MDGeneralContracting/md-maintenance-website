@@ -416,7 +416,7 @@ pages = {
                     <label for="general-issues">General Issues:</label><br>
                     <textarea id="general-issues" name="General Issues"></textarea><br><br>
 
-                    <label><input type="checkbox" id="certify-installer" required> I certify that the information is correct</label><br><br>
+                    <label><input type="checkbox" id="certify-installer" name="certify_installer" required> I certify that the information is correct</label><br><br>
                 </div>
 
                 <!-- Mechanic Form -->
@@ -507,7 +507,7 @@ pages = {
                     <label for="maintenance-work">Final Maintenance Work Description:</label><br>
                     <textarea id="maintenance-work" name="Maintenance Work"></textarea><br><br>
 
-                    <label><input type="checkbox" id="certify-mechanic" required> I certify that the information is correct</label><br><br>
+                    <label><input type="checkbox" id="certify-mechanic" name="certify_mechanic" required> I certify that the information is correct</label><br><br>
                 </div>
 
                 <button type="submit">Submit</button>
