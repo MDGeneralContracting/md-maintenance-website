@@ -203,6 +203,7 @@ base_template = """
 
 # Generate pages for each pay period
 for i, start_date in enumerate(recent_start_dates):
+    print(f"Generating file: two-week-summary-{start_date.strftime('%Y-%m-%d')}.html")
     daily_review_html, builder_summary_table = generate_pay_period_summary(start_date)
     end_date = start_date + timedelta(days=13)
     content = f"""
@@ -225,8 +226,10 @@ for i, start_date in enumerate(recent_start_dates):
     )
     with open(filename, 'w') as f:
         f.write(html_content)
+    print(f"Successfully wrote: {filename}")
 
 # Save the current period to two-week-summary.html
+print("Generating file: two-week-summary.html")
 with open('two-week-summary.html', 'w') as f:
     f.write(Template(base_template).render(
         page_title='2-Week Summary (Current)',
@@ -234,6 +237,7 @@ with open('two-week-summary.html', 'w') as f:
         pay_periods=pay_periods,
         current_start_date=current_start_date
     ))
+print("Successfully wrote: two-week-summary.html")
 
 # Generate other pages
 pages = {
@@ -268,6 +272,7 @@ pages = {
 # Generate remaining HTML pages
 template = Template(base_template)
 for filename, data in pages.items():
+    print(f"Generating file: {filename}")
     html_content = template.render(
         page_title=data['page_title'],
         content=data['content'],
@@ -276,3 +281,4 @@ for filename, data in pages.items():
     )
     with open(filename, 'w') as f:
         f.write(html_content)
+    print(f"Successfully wrote: {filename}")
