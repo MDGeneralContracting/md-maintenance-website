@@ -92,25 +92,32 @@ $(document).ready(function() {
         );
     };
 
-    // Form submission with success message and redirect
+    // Form submission with detailed logging
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
-        console.log('Form submission triggered'); // Add this line
+        console.log('Form submission triggered'); // Log when submission starts
+
         const role = $('#role').val();
+        console.log('Selected role:', role); // Log the selected role
+
         const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
         $(completionTimeField).val(new Date().toISOString());
+        console.log('Completion time set:', $(completionTimeField).val()); // Log the timestamp
 
         const formData = $(this).serializeArray().reduce((obj, item) => {
             obj[item.name] = item.value;
             return obj;
         }, {});
+        console.log('Form data:', formData); // Log the collected form data
 
         const githubToken = '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'; // Replace with your actual PAT
         const repoOwner = 'MDGeneralContracting';
         const repoName = 'md-maintenance-website';
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`;
+        console.log('API URL:', apiUrl); // Log the constructed URL
 
         $.ajax({
-            url: `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`,
+            url: apiUrl,
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${githubToken}`,
@@ -121,8 +128,11 @@ $(document).ready(function() {
                 event_type: 'form_submission',
                 client_payload: formData
             }),
-            success: function() {
-                // Show a more prominent success message
+            beforeSend: function() {
+                console.log('Sending API request...'); // Log before the request
+            },
+            success: function(response) {
+                console.log('API request successful:', response); // Log success (usually empty for 204)
                 const successMessage = $('<div class="success-message">Submission successful! Redirecting to Home...</div>');
                 $('body').append(successMessage);
                 successMessage.css({
@@ -138,14 +148,17 @@ $(document).ready(function() {
                     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
                     zIndex: 1000
                 });
-
-                // Redirect to index.html after 2 seconds
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);
             },
             error: function(xhr, status, error) {
-                console.error('Submission error:', xhr.responseJSON);
+                console.error('API request failed:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseJSON,
+                    statusCode: xhr.status
+                }); // Log detailed error info
                 alert('Submission failed: ' + (xhr.responseJSON?.message || error));
             }
         });
