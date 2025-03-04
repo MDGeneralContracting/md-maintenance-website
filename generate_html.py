@@ -6,7 +6,7 @@ from jinja2 import Template
 from datetime import datetime, timedelta
 
 # GitHub raw CSV URL
-CSV_URL = 'https://raw.githubusercontent.com/your-username/your-repo/main/data/boom_lift_data.csv'
+CSV_URL = 'https://raw.githubusercontent.com/MDGeneralContracting/md-maintenance-website/main/data/boom_lift_data.csv'
 response = requests.get(CSV_URL, timeout=10)
 response.raise_for_status()
 df = pd.read_csv(pd.io.common.StringIO(response.text), parse_dates=['Completion time'])
