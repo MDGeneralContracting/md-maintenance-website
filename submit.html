@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&D General Contracting - Submit Boom Lift Data</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="M&D General Contracting_E4_Cropped.png" alt="M&D Logo" class="logo">
+        <h1>M&D General Contracting</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="full-data.html">Full Data</a></li>
+                <li><a href="user-summary.html">User Summary</a></li>
+                <li><a href="two-week-summary.html">2-Week Summary</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+            <h2>Submit Boom Lift Data</h2>
+            <form id="boom-lift-form" method="POST">
+                <label for="role">Role:</label><br>
+                <select id="role" name="role" required onchange="toggleForm()">
+                    <option value="">Select Role</option>
+                    <option value="installer">Installer</option>
+                    <option value="mechanic">Mechanic</option>
+                </select><br><br>
+
+                <!-- Installer Form -->
+                <div id="installer-form" style="display: none;">
+                    <label for="installer-name">User Name:</label><br>
+                    <select id="installer-name" name="Name">
+                        <option value="">Select Name</option>
+                        <option value="Domogoj Cutuk">Domogoj Cutuk</option>
+                        <option value="Stanko Lukenda">Stanko Lukenda</option>
+                        <option value="Ivan Primorac">Ivan Primorac</option>
+                        <option value="C&3Js">C&3Js</option>
+                        <option value="KCA">KCA</option>
+                        <option value="Shawn Jackman">Shawn Jackman</option>
+                        <option value="Srecko Pivac">Srecko Pivac</option>
+                        <option value="Nikola Rotim">Nikola Rotim</option>
+                        <option value="Xtreme Aluminum">Xtreme Aluminum</option>
+                        <option value="M&D Admin">M&D Admin</option>
+                        <option value="Mechanic">Mechanic</option>
+                    </select><br><br>
+
+                    <label for="boom-lift-id">Boom Lift ID:</label><br>
+                    <select id="boom-lift-id" name="Boom Lift ID" required onchange="updateHoursValidation()">
+                        <option value="">Select Boom Lift</option>
+                        <option value="B_GNE_001">B_GNE_001</option>
+                        <option value="B_GNE_002">B_GNE_002</option>
+                        <option value="B_GNE_003">B_GNE_003</option>
+                        <option value="B_GNE_004">B_GNE_004</option>
+                        <option value="B_GNE_005">B_GNE_005</option>
+                        <option value="B_GNE_006">B_GNE_006</option>
+                        <option value="B_GNE_007">B_GNE_007</option>
+                        <option value="B_GNE_008">B_GNE_008</option>
+                        <option value="B_JLG_001">B_JLG_001</option>
+                        <option value="B_SNK_001">B_SNK_001</option>
+                    </select><br><br>
+
+                    <label for="builder">Builder:</label><br>
+                    <select id="builder" name="Builder" onchange="toggleOtherBuilder()">
+                        <option value="">Select Builder</option>
+                        <option value="Mattamy">Mattamy</option>
+                        <option value="Caivan">Caivan</option>
+                        <option value="Eden Oak">Eden Oak</option>
+                        <option value="Branthaven">Branthaven</option>
+                        <option value="Charleston">Charleston</option>
+                        <option value="Dincenzo">Dincenzo</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="other-builder" name="Other Builder" style="display: none;" placeholder="Specify Other"><br><br>
+
+                    <label for="site">Site:</label><br>
+                    <input type="text" id="site" name="Site" required><br><br>
+
+                    <input type="hidden" id="completion-time" name="Completion time">
+
+                    <label for="location">Location:</label><br>
+                    <button type="button" id="get-location" onclick="getGeolocation()">Use My Location</button>
+                    <input type="text" id="location" name="Location" readonly><br><br>
+
+                    <label for="hours">Hours:</label><br>
+                    <input type="number" id="hours" name="Hours" required min="0" step="1"><br><br>
+
+                    <label for="oil-level">Oil Level:</label><br>
+                    <select id="oil-level" name="Oil Level" required>
+                        <option value="">Select Level</option>
+                        <option value="High">High</option>
+                        <option value="Sufficient">Sufficient</option>
+                        <option value="Low">Low</option>
+                    </select><br><br>
+
+                    <label for="gas-level">Gas Level:</label><br>
+                    <select id="gas-level" name="Gas Level" required>
+                        <option value="">Select Level</option>
+                        <option value="Full">Full</option>
+                        <option value="Half">Half</option>
+                        <option value="Low">Low</option>
+                    </select><br><br>
+
+                    <label for="general-issues">General Issues:</label><br>
+                    <textarea id="general-issues" name="General Issues"></textarea><br><br>
+
+                    <label><input type="checkbox" id="certify-installer" required> I certify that the information is correct</label><br><br>
+                </div>
+
+                <!-- Mechanic Form -->
+                <div id="mechanic-form" style="display: none;">
+                    <label for="mechanic-name">User Name:</label><br>
+                    <select id="mechanic-name" name="Name">
+                        <option value="">Select Name</option>
+                        <option value="M&D Admin">M&D Admin</option>
+                        <option value="Mechanic">Mechanic</option>
+                    </select><br><br>
+
+                    <label for="mechanic-boom-lift-id">Boom Lift ID:</label><br>
+                    <select id="mechanic-boom-lift-id" name="Boom Lift ID" required onchange="updateHoursValidation()">
+                        <option value="">Select Boom Lift</option>
+                        <option value="B_GNE_001">B_GNE_001</option>
+                        <option value="B_GNE_002">B_GNE_002</option>
+                        <option value="B_GNE_003">B_GNE_003</option>
+                        <option value="B_GNE_004">B_GNE_004</option>
+                        <option value="B_GNE_005">B_GNE_005</option>
+                        <option value="B_GNE_006">B_GNE_006</option>
+                        <option value="B_GNE_007">B_GNE_007</option>
+                        <option value="B_GNE_008">B_GNE_008</option>
+                        <option value="B_JLG_001">B_JLG_001</option>
+                        <option value="B_SNK_001">B_SNK_001</option>
+                    </select><br><br>
+
+                    <label for="mechanic-builder">Builder:</label><br>
+                    <select id="mechanic-builder" name="Builder" onchange="toggleOtherBuilderMechanic()">
+                        <option value="">Select Builder</option>
+                        <option value="Mattamy">Mattamy</option>
+                        <option value="Caivan">Caivan</option>
+                        <option value="Eden Oak">Eden Oak</option>
+                        <option value="Branthaven">Branthaven</option>
+                        <option value="Charleston">Charleston</option>
+                        <option value="Dincenzo">Dincenzo</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="mechanic-other-builder" name="Other Builder" style="display: none;" placeholder="Specify Other"><br><br>
+
+                    <label for="mechanic-site">Site:</label><br>
+                    <input type="text" id="mechanic-site" name="Site" required><br><br>
+
+                    <input type="hidden" id="mechanic-completion-time" name="Completion time">
+
+                    <label for="mechanic-location">Location:</label><br>
+                    <button type="button" id="mechanic-get-location" onclick="getGeolocationMechanic()">Use My Location</button>
+                    <input type="text" id="mechanic-location" name="Location" readonly><br><br>
+
+                    <label for="mechanic-hours">Hours:</label><br>
+                    <input type="number" id="mechanic-hours" name="Hours" required min="0" step="1"><br><br>
+
+                    <label for="mechanic-oil-level">Oil Level:</label><br>
+                    <select id="mechanic-oil-level" name="Oil Level" required>
+                        <option value="">Select Level</option>
+                        <option value="High">High</option>
+                        <option value="Sufficient">Sufficient</option>
+                        <option value="Low">Low</option>
+                    </select><br><br>
+
+                    <label for="mechanic-gas-level">Gas Level:</label><br>
+                    <select id="mechanic-gas-level" name="Gas Level" required>
+                        <option value="">Select Level</option>
+                        <option value="Full">Full</option>
+                        <option value="Half">Half</option>
+                        <option value="Low">Low</option>
+                    </select><br><br>
+
+                    <label>Oil Change:</label><br>
+                    <input type="checkbox" id="oil-change" name="Oil Change" onchange="toggleOilChangeCost()"> Completed
+                    <input type="number" id="oil-change-cost" name="Oil Change Cost" style="display: none;" step="0.01" placeholder="Cost"><br><br>
+
+                    <label>Annual Inspection:</label><br>
+                    <input type="checkbox" id="annual-inspection" name="Annual Inspection" onchange="toggleAnnualInspectionCost()"> Completed
+                    <input type="number" id="annual-inspection-cost" name="Annual Inspection Cost" style="display: none;" step="0.01" placeholder="Cost"><br><br>
+
+                    <label>NDT:</label><br>
+                    <input type="checkbox" id="ndt" name="NDT" onchange="toggleNDTCost()"> Completed
+                    <input type="number" id="ndt-cost" name="NDT Cost" style="display: none;" step="0.01" placeholder="Cost"><br><br>
+
+                    <label>Radiator Repair:</label><br>
+                    <input type="checkbox" id="radiator-repair" name="Radiator Repair" onchange="toggleRadiatorRepairCost()"> Completed
+                    <input type="number" id="radiator-repair-cost" name="Radiator Repair Cost" style="display: none;" step="0.01" placeholder="Cost"><br><br>
+
+                    <label for="other-work">Other Work Completed:</label><br>
+                    <textarea id="other-work" name="Other Work" onchange="toggleOtherWorkCost()"></textarea>
+                    <input type="number" id="other-work-cost" name="Other Work Cost" style="display: none;" step="0.01" placeholder="Cost"><br><br>
+
+                    <label for="maintenance-work">Final Maintenance Work Description:</label><br>
+                    <textarea id="maintenance-work" name="Maintenance Work"></textarea><br><br>
+
+                    <label><input type="checkbox" id="certify-mechanic" required> I certify that the information is correct</label><br><br>
+                </div>
+
+                <button type="submit">Submit</button>
+            </form>
+            <p id="submission-message" style="display: none;">Submission successful!</p>
+        
+    </main>
+</body>
+</html>
