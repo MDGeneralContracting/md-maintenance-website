@@ -92,7 +92,7 @@ $(document).ready(function() {
         );
     };
 
-    // Form submission
+    // Form submission with success message and redirect
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
         const role = $('#role').val();
@@ -121,10 +121,27 @@ $(document).ready(function() {
                 client_payload: formData
             }),
             success: function() {
-                $('#submission-message').show();
-                setTimeout(() => $('#submission-message').hide(), 3000);
-                $('#boom-lift-form')[0].reset();
-                toggleForm();
+                // Show a more prominent success message
+                const successMessage = $('<div class="success-message">Submission successful! Redirecting to Home...</div>');
+                $('body').append(successMessage);
+                successMessage.css({
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    backgroundColor: '#0F4467',
+                    color: '#ffffff',
+                    padding: '20px 40px',
+                    borderRadius: '10px',
+                    fontSize: '1.5rem',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                    zIndex: 1000
+                });
+
+                // Redirect to index.html after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
             },
             error: function(xhr, status, error) {
                 console.error('Submission error:', xhr.responseJSON);
