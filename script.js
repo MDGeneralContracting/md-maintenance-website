@@ -1,5 +1,7 @@
+console.log('script.js file loaded immediately');
+
 $(document).ready(function() {
-    console.log('script.js loaded'); // Confirm script runs
+    console.log('script.js loaded');
 
     const tableOptions = {
         "paging": true,
@@ -100,7 +102,7 @@ $(document).ready(function() {
         );
     };
 
-    $('#boom-lift-form').on('submit', function(e) {
+    $(document).on('submit', '#boom-lift-form', function(e) {
         e.preventDefault();
         console.log('Submit button clicked');
 
@@ -117,7 +119,7 @@ $(document).ready(function() {
         }, {});
         console.log('Form data:', formData);
 
-        const githubToken = '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'; // Replace with your PAT
+        const githubToken = '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'; // Your PAT
         const repoOwner = 'MDGeneralContracting';
         const repoName = 'md-maintenance-website';
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`;
