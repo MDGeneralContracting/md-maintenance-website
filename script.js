@@ -106,7 +106,7 @@ $(document).ready(function() {
         $(completionTimeField).val(new Date().toISOString());
 
         $.ajax({
-            url: 'https://formspree.io/f/your-form-id', // Replace with your Formspree ID
+            url: 'https://formspree.io/f/mbldnvgr', // Correct url
             method: 'POST',
             data: $(this).serialize(),
             dataType: 'json',
