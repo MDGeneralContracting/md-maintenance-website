@@ -103,76 +103,78 @@ $(document).ready(function() {
     };
 
     $(document).on('submit', '#boom-lift-form', function(e) {
-        e.preventDefault();
-        console.log('Submit button clicked');
+    e.preventDefault();
+    console.log('Submit button clicked');
 
-        const role = $('#role').val();
-        console.log('Selected role:', role);
+    const role = $('#role').val();
+    console.log('Selected role:', role);
 
-        const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
-        $(completionTimeField).val(new Date().toISOString());
-        console.log('Completion time set:', $(completionTimeField).val());
+    const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
+    $(completionTimeField).val(new Date().toISOString());
+    console.log('Completion time set:', $(completionTimeField).val());
 
-        const formData = $(this).serializeArray().reduce((obj, item) => {
-            obj[item.name] = item.value;
-            return obj;
-        }, {});
-        console.log('Form data:', formData);
-
-        const githubToken = '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'; // Your PAT
-        const repoOwner = 'MDGeneralContracting';
-        const repoName = 'md-maintenance-website';
-        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`;
-        console.log('API URL:', apiUrl);
-
-        $.ajax({
-            url: apiUrl,
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${githubToken}`,
-                'Accept': 'application/vnd.github+json',
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                event_type: 'form_submission',
-                client_payload: formData
-            }),
-            beforeSend: function() {
-                console.log('Sending API request...');
-            },
-            success: function(response) {
-                console.log('API request successful:', response);
-                const successMessage = $('<div class="success-message">Submission successful! Redirecting to Home...</div>');
-                $('body').append(successMessage);
-                successMessage.css({
-                    position: 'fixed',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    backgroundColor: '#0F4467',
-                    color: '#ffffff',
-                    padding: '20px 40px',
-                    borderRadius: '10px',
-                    fontSize: '1.5rem',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-                    zIndex: 1000
-                });
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-            },
-            error: function(xhr, status, error) {
-                console.error('API request failed:', {
-                    status: status,
-                    error: error,
-                    response: xhr.responseJSON,
-                    statusCode: xhr.status
-                });
-                alert('Submission failed: ' + (xhr.responseJSON?.message || error));
-            }
-        });
+    // Log raw input values directly
+    const formData = {};
+    $(this).find('input, select, textarea').each(function() {
+        const name = $(this).attr('name');
+        const value = $(this).val();
+        if (name) formData[name] = value;
     });
+    console.log('Raw form data:', formData);
 
+    const githubToken = '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'; // Replace with your PAT
+    const repoOwner = 'MDGeneralContracting';
+    const repoName = 'md-maintenance-website';
+    const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`;
+    console.log('API URL:', apiUrl);
+
+    $.ajax({
+        url: apiUrl,
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${githubToken}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({
+            event_type: 'form_submission',
+            client_payload: formData
+        }),
+        beforeSend: function() {
+            console.log('Sending API request...');
+        },
+        success: function(response) {
+            console.log('API request successful:', response);
+            const successMessage = $('<div class="success-message">Submission successful! Redirecting to Home...</div>');
+            $('body').append(successMessage);
+            successMessage.css({
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#0F4467',
+                color: '#ffffff',
+                padding: '20px 40px',
+                borderRadius: '10px',
+                fontSize: '1.5rem',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                zIndex: 1000
+            });
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        },
+        error: function(xhr, status, error) {
+            console.error('API request failed:', {
+                status: status,
+                error: error,
+                response: xhr.responseJSON,
+                statusCode: xhr.status
+            });
+            alert('Submission failed: ' + (xhr.responseJSON?.message || error));
+        }
+    });
+});
     const boom_columns = [
         'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
         'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 
