@@ -66,13 +66,13 @@ last_maintenance['Last Maintenance'] = last_maintenance['Completion time'].dt.st
 last_maintenance = last_maintenance[['Boom Lift ID', 'Last Maintenance']]
 
 # Get hours at the most recent oil change
-oil_changes = valid_df[valid_df['Maintenance Work'].str.contains('Oil Change', na=False)]
+oil_changes = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('oil change', na=False)]
 oil_change_latest = oil_changes.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
 oil_change_latest['Oil Change'] = oil_change_latest['Hours'].astype(int)
 oil_change_latest = oil_change_latest[['Boom Lift ID', 'Oil Change']]
 
 # Get hours at the most recent annual inspection
-annual_inspections = valid_df[valid_df['Maintenance Work'].str.contains('Annual Inspection', na=False)]
+annual_inspections = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('annual inspection', na=False)]
 annual_inspection_latest = annual_inspections.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
 annual_inspection_latest['Annual Inspection'] = annual_inspection_latest['Hours'].astype(int)
 annual_inspection_latest = annual_inspection_latest[['Boom Lift ID', 'Annual Inspection']]
