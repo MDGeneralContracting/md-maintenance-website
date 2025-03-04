@@ -112,7 +112,7 @@ h2, h3, h4 {
 }
 
 .data-table th {
-    background-color: #0F4467;
+    background: linear-gradient(135deg, #0F4467, #1a6a9f); /* Modern gradient */
     color: #ffffff;
     padding: 1rem;
     text-align: left;
@@ -125,16 +125,40 @@ h2, h3, h4 {
     min-width: 120px;
 }
 
-.data-table tr.has-issues {
-    background-color: #ffe6e6;
-}
-
-.data-table tr:nth-child(even) {
-    background-color: #f9f9f9;
+/* All rows white with subtle hover */
+.data-table tr {
+    background-color: #ffffff;
 }
 
 .data-table tr:hover {
-    background-color: #f1f1f1;
+    background-color: #f5f7fa; /* Subtle modern hover */
+}
+
+/* Warning Styles */
+.oil-change-warning td:nth-child(9) { /* Hours Since Oil Change is 9th column (index 8) */
+    background-color: #fff3cd; /* Light yellow */
+    font-weight: bold;
+}
+
+.inspection-warning {
+    background-color: #f8d7da; /* Light red */
+    font-weight: bold;
+    position: relative;
+}
+
+.inspection-warning:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    z-index: 10;
 }
 
 /* DataTables Overrides */
@@ -168,6 +192,7 @@ h2, h3, h4 {
     padding: 0.5rem;
 }
 
+/* Modern Pagination Buttons */
 .dataTables_wrapper .dataTables_paginate {
     text-align: center;
     margin-top: 1rem;
@@ -177,14 +202,21 @@ h2, h3, h4 {
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     color: #0F4467 !important;
     border: 1px solid #0F4467;
-    border-radius: 5px;
-    padding: 0.75rem 1.5rem;
+    border-radius: 20px; /* Rounded buttons */
+    padding: 0.5rem 1rem;
     margin: 0 0.25rem;
     text-decoration: none;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: #0F4467 !important;
+    color: #ffffff !important;
+    border-color: #0F4467;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
     background-color: #B82025 !important;
     color: #ffffff !important;
     border-color: #B82025;
