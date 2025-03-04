@@ -17,8 +17,6 @@ $(document).ready(function() {
     $('#user-summary-table').DataTable(tableOptions);
     $('#builder-summary-table').DataTable(tableOptions);
 
-    // Existing Boom Lift Summary logic...
-
     // Fetch latest hours for validation
     let latestHours = {};
     boomTable.rows().every(function() {
@@ -26,7 +24,7 @@ $(document).ready(function() {
         latestHours[data[boom_columns.indexOf('Boom Lift ID')]] = parseInt(data[boom_columns.indexOf('Hours')]) || 0;
     });
 
-    // Form toggling and other functions (unchanged)
+    // Form toggling and other functions
     window.toggleForm = function() {
         const role = $('#role').val();
         $('#installer-form').toggle(role === 'installer');
@@ -94,7 +92,7 @@ $(document).ready(function() {
         );
     };
 
-    // Form submission to GitHub API with PAT
+    // Form submission
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
         const role = $('#role').val();
@@ -106,9 +104,9 @@ $(document).ready(function() {
             return obj;
         }, {});
 
-        const githubToken = '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'; // Replace with your actual PAT
-        const repoOwner = 'MDGeneralContracting'; // Replace with your GitHub username
-        const repoName = 'md-maintenance-website'; // Replace with your repository name
+        const githubToken = 'ghp_YourPersonalAccessTokenHere'; // Replace with your actual PAT
+        const repoOwner = 'MDGeneralContracting';
+        const repoName = 'md-maintenance-website';
 
         $.ajax({
             url: `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`,
@@ -134,9 +132,11 @@ $(document).ready(function() {
             }
         });
     });
-});
 
-const boom_columns = [
-    'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
-    'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 'Annual Inspection'
-];
+    // Define boom_columns to match Python
+    const boom_columns = [
+        'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
+        'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 
+        'Annual Inspection', 'NDT', 'Radiator Repair'
+    ];
+});
