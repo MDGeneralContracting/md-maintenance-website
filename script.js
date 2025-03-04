@@ -105,7 +105,7 @@ $(document).ready(function() {
             return obj;
         }, {});
 
-        const githubToken = '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'; // Replace with your actual PAT
+        const githubToken = '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'; // Replace with your actual PAT
         const repoOwner = 'MDGeneralContracting';
         const repoName = 'md-maintenance-website';
 
