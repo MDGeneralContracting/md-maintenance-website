@@ -21,11 +21,16 @@ jobs:
           import pandas as pd
           import os
           import json
-          data = json.loads('''${{ toJSON(github.event.client_payload) }}''')
-          df = pd.read_csv('data/boom_lift_data.csv') if os.path.exists('data/boom_lift_data.csv') else pd.DataFrame(columns=['Completion time', 'Name', 'Boom Lift ID', 'Builder', 'Site', 'Location', 'Hours', 'Oil Level', 'Gas Level', 'General Issues', 'Oil Change', 'Oil Change Cost', 'Annual Inspection', 'Annual Inspection Cost', 'NDT', 'NDT Cost', 'Radiator Repair', 'Radiator Repair Cost', 'Other Work', 'Other Work Cost', 'Maintenance Work'])
-          new_row = pd.DataFrame([data])
-          df = pd.concat([df, new_row], ignore_index=True)
-          df.to_csv('data/boom_lift_data.csv', index=False)
+          import sys
+          try:
+              data = json.loads('''${{ toJSON(github.event.client_payload) }}''')
+              df = pd.read_csv('data/boom_lift_data.csv') if os.path.exists('data/boom_lift_data.csv') else pd.DataFrame(columns=['Completion time', 'Name', 'Boom Lift ID', 'Builder', 'Site', 'Location', 'Hours', 'Oil Level', 'Gas Level', 'General Issues', 'Oil Change', 'Oil Change Cost', 'Annual Inspection', 'Annual Inspection Cost', 'NDT', 'NDT Cost', 'Radiator Repair', 'Radiator Repair Cost', 'Other Work', 'Other Work Cost', 'Maintenance Work'])
+              new_row = pd.DataFrame([data])
+              df = pd.concat([df, new_row], ignore_index=True)
+              df.to_csv('data/boom_lift_data.csv', index=False)
+          except Exception as e:
+              print(f'Error: {str(e)}', file=sys.stderr)
+              sys.exit(1)
           "
       - name: Commit changes
         run: |
