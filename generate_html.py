@@ -52,7 +52,6 @@ boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
     'General Issues', 'Last Maintenance', 'Oil Change', 'Annual Inspection'
 ]
-
 boom_lift_summary = pd.DataFrame({'Boom Lift ID': valid_boom_lifts})
 current_status = valid_df.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
 last_maintenance = valid_df[valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '')].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
@@ -100,8 +99,18 @@ period_number = days_diff // 14
 all_start_dates = [start_date + timedelta(days=14 * i) for i in range(period_number + 1)]
 all_start_dates.reverse()  # Most recent first
 
-# Limit to current and previous 10 periods
+# Limit to current and previous 10 periods (11 total)
 recent_start_dates = all_start_dates[:11]
+
+# Precompute pay periods with start and end dates
+pay_periods = []
+for start in recent_start_dates:
+    end = start + timedelta(days=13)
+    pay_periods.append({
+        'start': start.strftime('%Y-%m-%d'),
+        'end': end.strftime('%Y-%m-%d'),
+        'filename': f"two-week-summary-{start.strftime('%Y-%m-%d')}.html"
+    })
 
 # Function to generate summary for a given pay period
 def generate_pay_period_summary(start_date):
@@ -173,10 +182,10 @@ base_template = """
         <div class="pay-period-selector">
             <label for="pay-period-select">Select Pay Period: </label>
             <select id="pay-period-select">
-                {% for date in recent_start_dates %}
-                <option value="two-week-summary-{{ date.strftime('%Y-%m-%d') }}.html"
-                        {% if date == current_start_date %}selected{% endif %}>
-                    {{ date.strftime('%Y-%m-%d') }} to {{ (date + timedelta(days=13)).strftime('%Y-%m-%d') }}
+                {% for period in pay_periods %}
+                <option value="{{ period.filename }}"
+                        {% if period.start == current_start_date %}selected{% endif %}>
+                    {{ period.start }} to {{ period.end }}
                 </option>
                 {% endfor %}
             </select>
@@ -205,23 +214,24 @@ for i, start_date in enumerate(recent_start_dates):
     """
     filename = f"two-week-summary-{start_date.strftime('%Y-%m-%d')}.html"
     if i == 0:  # Current period
-        current_start_date = start_date
+        current_start_date = start_date.strftime('%Y-%m-%d')
         current_content = content
+    
     html_content = Template(base_template).render(
         page_title=f'2-Week Summary ({start_date.strftime("%Y-%m-%d")})',
         content=content,
-        recent_start_dates=recent_start_dates,
-        current_start_date=start_date
+        pay_periods=pay_periods,
+        current_start_date=current_start_date
     )
     with open(filename, 'w') as f:
         f.write(html_content)
 
-# Also save the current period to two-week-summary.html
+# Save the current period to two-week-summary.html
 with open('two-week-summary.html', 'w') as f:
     f.write(Template(base_template).render(
         page_title='2-Week Summary (Current)',
         content=current_content,
-        recent_start_dates=recent_start_dates,
+        pay_periods=pay_periods,
         current_start_date=current_start_date
     ))
 
@@ -261,7 +271,7 @@ for filename, data in pages.items():
     html_content = template.render(
         page_title=data['page_title'],
         content=data['content'],
-        recent_start_dates=recent_start_dates,
+        pay_periods=pay_periods,
         current_start_date=current_start_date
     )
     with open(filename, 'w') as f:
