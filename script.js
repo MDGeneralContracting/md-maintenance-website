@@ -20,14 +20,14 @@ $(document).ready(function() {
     // Add warnings for Hours Since Oil Change > 250
     boomTable.rows().every(function() {
         const data = this.data();
-        const hoursSinceOilChangeIdx = boom_columns.indexOf('Hours Since Oil Change'); // Match with Python boom_columns
+        const hoursSinceOilChangeIdx = boom_columns.indexOf('Hours Since Oil Change'); // 10th column (index 9)
         const hoursSinceOilChange = data[hoursSinceOilChangeIdx];
         if (hoursSinceOilChange !== 'No Data' && parseInt(hoursSinceOilChange) > 250) {
             $(this.node()).addClass('oil-change-warning');
         }
 
         // Add warnings for Annual Inspection > 10 months
-        const annualInspectionIdx = boom_columns.indexOf('Annual Inspection');
+        const annualInspectionIdx = boom_columns.indexOf('Annual Inspection'); // 11th column (index 10)
         const annualInspectionDate = data[annualInspectionIdx];
         if (annualInspectionDate !== 'No Data Available') {
             const inspectionDate = new Date(annualInspectionDate);
@@ -60,5 +60,5 @@ $(document).ready(function() {
 // Define boom_columns to match Python (for column indexing)
 const boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
-    'General Issues', 'Last Maintenance', 'Hours Since Oil Change', 'Annual Inspection'
+    'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 'Annual Inspection'
 ];
