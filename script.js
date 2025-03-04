@@ -17,9 +17,11 @@ $(document).ready(function() {
     $('#user-summary-table').DataTable(tableOptions);
     $('#builder-summary-table').DataTable(tableOptions);
 
-    // Add warnings for Hours Since Oil Change > 250
+    // Add warnings and tooltips for Boom Lift Summary
     boomTable.rows().every(function() {
         const data = this.data();
+
+        // Hours Since Oil Change > 250 warning
         const hoursSinceOilChangeIdx = boom_columns.indexOf('Hours Since Oil Change'); // 10th column (index 9)
         const hoursSinceOilChange = data[hoursSinceOilChangeIdx];
         if (hoursSinceOilChange !== 'No Data' && parseInt(hoursSinceOilChange) > 250) {
@@ -27,7 +29,7 @@ $(document).ready(function() {
             cell.addClass('oil-change-warning');
         }
 
-        // Add warnings and tooltip for Annual Inspection > 10 months
+        // Annual Inspection warning and tooltip
         const annualInspectionIdx = boom_columns.indexOf('Annual Inspection'); // 11th column (index 10)
         const annualInspectionDate = data[annualInspectionIdx];
         if (annualInspectionDate !== 'No Data Available') {
@@ -35,13 +37,17 @@ $(document).ready(function() {
             const today = new Date();
             const monthsDiff = (today.getFullYear() - inspectionDate.getFullYear()) * 12 +
                               (today.getMonth() - inspectionDate.getMonth());
+            const expiryDate = new Date(inspectionDate);
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+            
+            const cell = $(this.node()).find(`td:eq(${annualInspectionIdx})`);
+            // Add tooltip for all valid dates
+            cell.attr('data-tooltip', `Days until next annual inspection: ${daysUntilExpiry > 0 ? daysUntilExpiry : 'Expired'}`);
+            
+            // Add warning if > 10 months
             if (monthsDiff > 10) {
-                const cell = $(this.node()).find(`td:eq(${annualInspectionIdx})`);
                 cell.addClass('inspection-warning');
-                const expiryDate = new Date(inspectionDate);
-                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-                const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-                cell.attr('data-tooltip', `Expires: ${expiryDate.toISOString().split('T')[0]} (${daysUntilExpiry > 0 ? daysUntilExpiry + ' days' : 'Expired'})`);
             }
         }
     });
