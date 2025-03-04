@@ -17,54 +17,113 @@ $(document).ready(function() {
     $('#user-summary-table').DataTable(tableOptions);
     $('#builder-summary-table').DataTable(tableOptions);
 
-    // Add warnings and tooltips for Boom Lift Summary
+    // Existing Boom Lift Summary logic...
+
+    // Fetch latest hours for validation
+    let latestHours = {};
     boomTable.rows().every(function() {
         const data = this.data();
+        latestHours[data[boom_columns.indexOf('Boom Lift ID')]] = parseInt(data[boom_columns.indexOf('Hours')]) || 0;
+    });
 
-        // Hours Since Oil Change > 250 warning
-        const hoursSinceOilChangeIdx = boom_columns.indexOf('Hours Since Oil Change'); // 10th column (index 9)
-        const hoursSinceOilChange = data[hoursSinceOilChangeIdx];
-        if (hoursSinceOilChange !== 'No Data' && parseInt(hoursSinceOilChange) > 250) {
-            const cell = $(this.node()).find(`td:eq(${hoursSinceOilChangeIdx})`);
-            cell.addClass('oil-change-warning');
+    // Form toggling
+    window.toggleForm = function() {
+        const role = $('#role').val();
+        $('#installer-form').toggle(role === 'installer');
+        $('#mechanic-form').toggle(role === 'mechanic');
+        if (role === 'installer') {
+            $('#installer-name').prop('required', true);
+            $('#mechanic-name').prop('required', false);
+        } else if (role === 'mechanic') {
+            $('#installer-name').prop('required', false);
+            $('#mechanic-name').prop('required', true);
         }
+    };
 
-        // Annual Inspection warning and tooltip
-        const annualInspectionIdx = boom_columns.indexOf('Annual Inspection'); // 11th column (index 10)
-        const annualInspectionDate = data[annualInspectionIdx];
-        if (annualInspectionDate !== 'No Data Available') {
-            const inspectionDate = new Date(annualInspectionDate);
-            const today = new Date();
-            const monthsDiff = (today.getFullYear() - inspectionDate.getFullYear()) * 12 +
-                              (today.getMonth() - inspectionDate.getMonth());
-            const expiryDate = new Date(inspectionDate);
-            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-            const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-            
-            const cell = $(this.node()).find(`td:eq(${annualInspectionIdx})`);
-            // Add tooltip for all valid dates
-            cell.attr('data-tooltip', `Days until next annual inspection: ${daysUntilExpiry > 0 ? daysUntilExpiry : 'Expired'}`);
-            
-            // Add warning if > 10 months
-            if (monthsDiff > 10) {
-                cell.addClass('inspection-warning');
+    // Builder "Other" toggling
+    window.toggleOtherBuilder = function() {
+        $('#other-builder').toggle($('#builder').val() === 'Other');
+    };
+    window.toggleOtherBuilderMechanic = function() {
+        $('#mechanic-other-builder').toggle($('#mechanic-builder').val() === 'Other');
+    };
+
+    // Maintenance cost toggling
+    window.toggleOilChangeCost = function() {
+        $('#oil-change-cost').toggle($('#oil-change').is(':checked'));
+    };
+    window.toggleAnnualInspectionCost = function() {
+        $('#annual-inspection-cost').toggle($('#annual-inspection').is(':checked'));
+    };
+    window.toggleNDTCost = function() {
+        $('#ndt-cost').toggle($('#ndt').is(':checked'));
+    };
+    window.toggleRadiatorRepairCost = function() {
+        $('#radiator-repair-cost').toggle($('#radiator-repair').is(':checked'));
+    };
+    window.toggleOtherWorkCost = function() {
+        $('#other-work-cost').toggle($('#other-work').val().trim() !== '');
+    };
+
+    // Hours validation
+    window.updateHoursValidation = function() {
+        const boomId = $('#boom-lift-id').val() || $('#mechanic-boom-lift-id').val();
+        const minHours = latestHours[boomId] || 0;
+        $('#hours, #mechanic-hours').attr('min', minHours).on('input', function() {
+            if (parseInt(this.value) < minHours) {
+                this.setCustomValidity(`Hours must be at least ${minHours}`);
+            } else {
+                this.setCustomValidity('');
             }
-        }
-    });
+        });
+    };
 
-    // Navigation active link
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-    $('nav a').each(function() {
-        const href = $(this).attr('href');
-        if (href === currentPath) {
-            $(this).addClass('active');
-        }
-    });
+    // Geolocation
+    window.getGeolocation = function() {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                $('#location').val(`${latitude}, ${longitude}`);
+            },
+            () => alert('Unable to retrieve location.')
+        );
+    };
+    window.getGeolocationMechanic = function() {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                $('#mechanic-location').val(`${latitude}, ${longitude}`);
+            },
+            () => alert('Unable to retrieve location.')
+        );
+    };
 
-    console.log("M&D General Contracting tables initialized with DataTables.");
+    // Form submission
+    $('#boom-lift-form').on('submit', function(e) {
+        e.preventDefault();
+        const role = $('#role').val();
+        const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
+        $(completionTimeField).val(new Date().toISOString());
+
+        $.ajax({
+            url: 'https://formspree.io/f/your-form-id', // Replace with your Formspree ID
+            method: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function() {
+                $('#submission-message').show();
+                setTimeout(() => $('#submission-message').hide(), 3000);
+                $('#boom-lift-form')[0].reset();
+                toggleForm();
+            },
+            error: function() {
+                alert('Submission failed. Please try again.');
+            }
+        });
+    });
 });
 
-// Define boom_columns to match Python (for column indexing)
+// Define boom_columns (unchanged)
 const boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
     'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 'Annual Inspection'
