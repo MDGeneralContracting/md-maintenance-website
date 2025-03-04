@@ -151,8 +151,42 @@ def generate_pay_period_summary(start_date):
 
     return daily_review_html, builder_summary_table
 
-# Base Template with DataTables CDN and Pay Period Dropdown
-base_template = """
+# Base Template without Dropdown (for non-summary pages)
+base_template_no_dropdown = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&D General Contracting - {{ page_title }}</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="M&D General Contracting_E4_Cropped.png" alt="M&D Logo" class="logo">
+        <h1>M&D General Contracting</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="full-data.html">Full Data</a></li>
+                <li><a href="user-summary.html">User Summary</a></li>
+                <li><a href="two-week-summary.html">2-Week Summary</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {{ content | safe }}
+    </main>
+</body>
+</html>
+"""
+
+# Base Template with Dropdown (for summary pages)
+base_template_with_dropdown = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -214,11 +248,12 @@ for i, start_date in enumerate(recent_start_dates):
         <div class="table-container">{builder_summary_table}</div>
     """
     filename = f"two-week-summary-{start_date.strftime('%Y-%m-%d')}.html"
-    if i == 0:  # Current period
-        current_start_date = start_date.strftime('%Y-%m-%d')
+    current_start_date = start_date.strftime('%Y-%m-%d')  # Set to this page’s period
+    if i == 0:  # Current period for two-week-summary.html
+        latest_start_date = current_start_date
         current_content = content
     
-    html_content = Template(base_template).render(
+    html_content = Template(base_template_with_dropdown).render(
         page_title=f'2-Week Summary ({start_date.strftime("%Y-%m-%d")})',
         content=content,
         pay_periods=pay_periods,
@@ -231,15 +266,15 @@ for i, start_date in enumerate(recent_start_dates):
 # Save the current period to two-week-summary.html
 print("Generating file: two-week-summary.html")
 with open('two-week-summary.html', 'w') as f:
-    f.write(Template(base_template).render(
+    f.write(Template(base_template_with_dropdown).render(
         page_title='2-Week Summary (Current)',
         content=current_content,
         pay_periods=pay_periods,
-        current_start_date=current_start_date
+        current_start_date=latest_start_date
     ))
 print("Successfully wrote: two-week-summary.html")
 
-# Generate other pages
+# Generate other pages without dropdown
 pages = {
     'index.html': {
         'page_title': 'Home',
@@ -269,15 +304,13 @@ pages = {
     }
 }
 
-# Generate remaining HTML pages
-template = Template(base_template)
+# Generate remaining HTML pages without dropdown
+template = Template(base_template_no_dropdown)
 for filename, data in pages.items():
     print(f"Generating file: {filename}")
     html_content = template.render(
         page_title=data['page_title'],
-        content=data['content'],
-        pay_periods=pay_periods,
-        current_start_date=current_start_date
+        content=data['content']
     )
     with open(filename, 'w') as f:
         f.write(html_content)
