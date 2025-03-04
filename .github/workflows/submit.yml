@@ -1,0 +1,37 @@
+name: Handle Form Submission
+on:
+  repository_dispatch:
+    types: [form_submission]
+jobs:
+  append-to-csv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: pip install pandas
+      - name: Append to CSV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -c "
+          import pandas as pd
+          import os
+          import base64
+          import requests
+          data = ${{ toJSON(github.event.client_payload) }}
+          df = pd.read_csv('data/boom_lift_data.csv') if os.path.exists('data/boom_lift_data.csv') else pd.DataFrame(columns=['Completion time', 'Name', 'Boom Lift ID', 'Builder', 'Site', 'Location', 'Hours', 'Oil Level', 'Gas Level', 'General Issues', 'Oil Change', 'Oil Change Cost', 'Annual Inspection', 'Annual Inspection Cost', 'NDT', 'NDT Cost', 'Radiator Repair', 'Radiator Repair Cost', 'Other Work', 'Other Work Cost', 'Maintenance Work'])
+          new_row = pd.DataFrame([data])
+          df = pd.concat([df, new_row], ignore_index=True)
+          df.to_csv('data/boom_lift_data.csv', index=False)
+          "
+      - name: Commit changes
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add data/boom_lift_data.csv
+          git commit -m "Add new submission" || echo "No changes to commit"
+          git push
