@@ -23,10 +23,11 @@ $(document).ready(function() {
         const hoursSinceOilChangeIdx = boom_columns.indexOf('Hours Since Oil Change'); // 10th column (index 9)
         const hoursSinceOilChange = data[hoursSinceOilChangeIdx];
         if (hoursSinceOilChange !== 'No Data' && parseInt(hoursSinceOilChange) > 250) {
-            $(this.node()).addClass('oil-change-warning');
+            const cell = $(this.node()).find(`td:eq(${hoursSinceOilChangeIdx})`);
+            cell.addClass('oil-change-warning');
         }
 
-        // Add warnings for Annual Inspection > 10 months
+        // Add warnings and tooltip for Annual Inspection > 10 months
         const annualInspectionIdx = boom_columns.indexOf('Annual Inspection'); // 11th column (index 10)
         const annualInspectionDate = data[annualInspectionIdx];
         if (annualInspectionDate !== 'No Data Available') {
@@ -40,7 +41,7 @@ $(document).ready(function() {
                 const expiryDate = new Date(inspectionDate);
                 expiryDate.setFullYear(expiryDate.getFullYear() + 1);
                 const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-                cell.attr('data-tooltip', `Expires in ${daysUntilExpiry} days (${expiryDate.toISOString().split('T')[0]})`);
+                cell.attr('data-tooltip', `Expires: ${expiryDate.toISOString().split('T')[0]} (${daysUntilExpiry > 0 ? daysUntilExpiry + ' days' : 'Expired'})`);
             }
         }
     });
