@@ -14,13 +14,13 @@ excel_data = BytesIO(response.content)
 # Read 'Sheet1' from the Excel file
 df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
 df['General Issues'] = df['General Issues'].fillna('')
-df['Maintenance Work'] = df['Maintenance Work'].fillna('')  # Ensure no NaN values
-df['Cost of Maintenance'] = df['Cost of Maintenance'].fillna(0)  # Default to 0 if missing
+df['Maintenance Work'] = df['Maintenance Work'].fillna('')
+df['Cost of Maintenance'] = df['Cost of Maintenance'].fillna(0)
 
 # Define valid boom lift IDs
 valid_boom_lifts = [
-    'B_GNE_001', 'B_GNE_002', 'B_GNE_003', 'B_GNE_004', 
-    'B_GNE_005', 'B_GNE_006', 'B_GNE_007', 'B_GNE_008', 
+    'B_GNE_001', 'B_GNE_002', 'B_GNE_003', 'B_GNE_004',
+    'B_GNE_005', 'B_GNE_006', 'B_GNE_007', 'B_GNE_008',
     'B_JLG_001', 'B_SNK_001'
 ]
 
@@ -41,7 +41,7 @@ def generate_html_table(df, columns, table_id):
 
 # Full Data Table with Maintenance Columns
 display_columns = [
-    'Completion time', 'Name', 'Boom Lift ID', 'Hours', 'Oil Level', 'Gas Level', 
+    'Completion time', 'Name', 'Boom Lift ID', 'Hours', 'Oil Level', 'Gas Level',
     'General Issues', 'Maintenance Work', 'Cost of Maintenance'
 ]
 full_data_df = valid_df[display_columns].sort_values('Completion time', ascending=False)
@@ -49,47 +49,26 @@ full_data_table = generate_html_table(full_data_df, display_columns, "full-data-
 
 # Boom Lift Summary
 boom_columns = [
-    'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 
+    'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
     'General Issues', 'Last Maintenance', 'Oil Change', 'Annual Inspection'
 ]
 
-# Create a base dataframe with all valid boom lift IDs
 boom_lift_summary = pd.DataFrame({'Boom Lift ID': valid_boom_lifts})
-
-# Get the most recent submission for each boom lift (current status)
 current_status = valid_df.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
-
-# Get the most recent maintenance date (any non-empty Maintenance Work)
-maintenance_submissions = valid_df[valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '')]
-last_maintenance = maintenance_submissions.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+last_maintenance = valid_df[valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '')].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
 last_maintenance['Last Maintenance'] = last_maintenance['Completion time'].dt.strftime('%Y-%m-%d')
-last_maintenance = last_maintenance[['Boom Lift ID', 'Last Maintenance']]
+oil_changes = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('oil change', na=False)].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+oil_changes['Oil Change'] = oil_changes['Hours'].astype(int)
+annual_inspections = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('annual inspection', na=False)].sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+annual_inspections['Annual Inspection'] = annual_inspections['Hours'].astype(int)
 
-# Get hours at the most recent oil change
-oil_changes = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('oil change', na=False)]
-oil_change_latest = oil_changes.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
-oil_change_latest['Oil Change'] = oil_change_latest['Hours'].astype(int)
-oil_change_latest = oil_change_latest[['Boom Lift ID', 'Oil Change']]
-
-# Get hours at the most recent annual inspection
-annual_inspections = valid_df[valid_df['Maintenance Work'].str.lower().str.contains('annual inspection', na=False)]
-annual_inspection_latest = annual_inspections.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
-annual_inspection_latest['Annual Inspection'] = annual_inspection_latest['Hours'].astype(int)
-annual_inspection_latest = annual_inspection_latest[['Boom Lift ID', 'Annual Inspection']]
-
-# Merge all data into the summary table
 boom_lift_summary = boom_lift_summary.merge(
     current_status[['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']],
     on='Boom Lift ID', how='left'
-).merge(
-    last_maintenance, on='Boom Lift ID', how='left'
-).merge(
-    oil_change_latest, on='Boom Lift ID', how='left'
-).merge(
-    annual_inspection_latest, on='Boom Lift ID', how='left'
-)
+).merge(last_maintenance[['Boom Lift ID', 'Last Maintenance']], on='Boom Lift ID', how='left').merge(
+    oil_changes[['Boom Lift ID', 'Oil Change']], on='Boom Lift ID', how='left'
+).merge(annual_inspections[['Boom Lift ID', 'Annual Inspection']], on='Boom Lift ID', how='left')
 
-# Format columns for display
 boom_lift_summary['Completion time'] = boom_lift_summary['Completion time'].apply(
     lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else 'No Data Available'
 )
@@ -111,47 +90,59 @@ user_summary = valid_df.groupby('Name').agg(
 user_columns = ['Name', 'submissions', 'latest_submission', 'issues']
 user_summary_table = generate_html_table(user_summary, user_columns, "user-summary-table")
 
-# 2-Week Summary with Calendar Styling
-start_date = datetime(2024, 12, 30)
+# 2-Week Summary with Dropdown for Pay Periods
+start_date = datetime(2024, 12, 30)  # Initial pay period start date
 today = datetime.now()
 days_diff = (today - start_date).days
 period_number = days_diff // 14
-current_period_start = start_date + timedelta(days=period_number * 14)
-current_period_end = current_period_start + timedelta(days=13)
-two_week_df = valid_df[
-    (valid_df['Completion time'] >= current_period_start) &
-    (valid_df['Completion time'] < current_period_end + timedelta(days=1))
-].copy()
-two_week_df['Date'] = two_week_df['Completion time'].dt.date
 
-daily_review_html = '<div class="calendar"><div class="calendar-grid">'
-days = [current_period_start + timedelta(days=i) for i in range(14)]
-for day in days:
-    day_str = day.strftime('%Y-%m-%d')
-    day_group = two_week_df[two_week_df['Date'] == day.date()]
-    submissions = ''
-    if not day_group.empty:
-        for name, name_group in day_group.groupby('Name'):
-            boom_lifts = name_group['Boom Lift ID'].tolist()
-            submissions += f'<p><strong>{name}</strong>: {", ".join(boom_lifts)}</p>'
-    else:
-        submissions = '<p class="no-submissions">No submissions</p>'
-    daily_review_html += (
-        f'<div class="calendar-day">'
-        f'<h4>{day.strftime("%a, %b %d")}</h4>'
-        f'{submissions}'
-        f'</div>'
-    )
-daily_review_html += '</div></div>'
+# Generate all pay periods from start_date to current period
+all_start_dates = [start_date + timedelta(days=14 * i) for i in range(period_number + 1)]
+all_start_dates.reverse()  # Most recent first
 
-builder_summary = two_week_df.groupby('Builder').agg(
-    completions=('Completion time', 'count'),
-    issues=('General Issues', lambda x: (x != '').sum())
-).reset_index() if not two_week_df.empty else pd.DataFrame(columns=['Builder', 'completions', 'issues'])
-builder_columns = ['Builder', 'completions', 'issues']
-builder_summary_table = generate_html_table(builder_summary, builder_columns, "builder-summary-table")
+# Limit to current and previous 10 periods
+recent_start_dates = all_start_dates[:11]
 
-# Base HTML Template with DataTables CDN
+# Function to generate summary for a given pay period
+def generate_pay_period_summary(start_date):
+    end_date = start_date + timedelta(days=13)
+    period_df = valid_df[
+        (valid_df['Completion time'] >= start_date) &
+        (valid_df['Completion time'] < end_date + timedelta(days=1))
+    ].copy()
+    period_df['Date'] = period_df['Completion time'].dt.date
+
+    # Daily Review Calendar
+    daily_review_html = '<div class="calendar"><div class="calendar-grid">'
+    days = [start_date + timedelta(days=i) for i in range(14)]
+    for day in days:
+        day_group = period_df[period_df['Date'] == day.date()]
+        submissions = ''
+        if not day_group.empty:
+            for name, name_group in day_group.groupby('Name'):
+                boom_lifts = name_group['Boom Lift ID'].tolist()
+                submissions += f'<p><strong>{name}</strong>: {", ".join(boom_lifts)}</p>'
+        else:
+            submissions = '<p class="no-submissions">No submissions</p>'
+        daily_review_html += (
+            f'<div class="calendar-day">'
+            f'<h4>{day.strftime("%a, %b %d")}</h4>'
+            f'{submissions}'
+            f'</div>'
+        )
+    daily_review_html += '</div></div>'
+
+    # Builder Summary
+    builder_summary = period_df.groupby('Builder').agg(
+        completions=('Completion time', 'count'),
+        issues=('General Issues', lambda x: (x != '').sum())
+    ).reset_index() if not period_df.empty else pd.DataFrame(columns=['Builder', 'completions', 'issues'])
+    builder_columns = ['Builder', 'completions', 'issues']
+    builder_summary_table = generate_html_table(builder_summary, builder_columns, "builder-summary-table")
+
+    return daily_review_html, builder_summary_table
+
+# Base Template with DataTables CDN and Pay Period Dropdown
 base_template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -179,13 +170,62 @@ base_template = """
         </nav>
     </header>
     <main>
-        {{ content }}
+        <div class="pay-period-selector">
+            <label for="pay-period-select">Select Pay Period: </label>
+            <select id="pay-period-select">
+                {% for date in recent_start_dates %}
+                <option value="two-week-summary-{{ date.strftime('%Y-%m-%d') }}.html"
+                        {% if date == current_start_date %}selected{% endif %}>
+                    {{ date.strftime('%Y-%m-%d') }} to {{ (date + timedelta(days=13)).strftime('%Y-%m-%d') }}
+                </option>
+                {% endfor %}
+            </select>
+            <script>
+                document.getElementById('pay-period-select').addEventListener('change', function() {
+                    window.location.href = this.value;
+                });
+            </script>
+        </div>
+        {{ content | safe }}
     </main>
 </body>
 </html>
 """
 
-# Define page contents
+# Generate pages for each pay period
+for i, start_date in enumerate(recent_start_dates):
+    daily_review_html, builder_summary_table = generate_pay_period_summary(start_date)
+    end_date = start_date + timedelta(days=13)
+    content = f"""
+        <h2>2-Week Summary ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})</h2>
+        <h3>Daily Review</h3>
+        {daily_review_html}
+        <h3>Builder Summary</h3>
+        <div class="table-container">{builder_summary_table}</div>
+    """
+    filename = f"two-week-summary-{start_date.strftime('%Y-%m-%d')}.html"
+    if i == 0:  # Current period
+        current_start_date = start_date
+        current_content = content
+    html_content = Template(base_template).render(
+        page_title=f'2-Week Summary ({start_date.strftime("%Y-%m-%d")})',
+        content=content,
+        recent_start_dates=recent_start_dates,
+        current_start_date=start_date
+    )
+    with open(filename, 'w') as f:
+        f.write(html_content)
+
+# Also save the current period to two-week-summary.html
+with open('two-week-summary.html', 'w') as f:
+    f.write(Template(base_template).render(
+        page_title='2-Week Summary (Current)',
+        content=current_content,
+        recent_start_dates=recent_start_dates,
+        current_start_date=current_start_date
+    ))
+
+# Generate other pages
 pages = {
     'index.html': {
         'page_title': 'Home',
@@ -212,22 +252,17 @@ pages = {
             '<h2>User Summary</h2>'
             '<div class="table-container">' + user_summary_table + '</div>'
         )
-    },
-    'two-week-summary.html': {
-        'page_title': '2-Week Summary',
-        'content': (
-            f'<h2>2-Week Summary ({current_period_start.strftime("%Y-%m-%d")} to {current_period_end.strftime("%Y-%m-%d")})</h2>'
-            '<h3>Daily Review</h3>'
-            f'{daily_review_html}'
-            '<h3>Builder Summary</h3>'
-            '<div class="table-container">' + builder_summary_table + '</div>'
-        )
     }
 }
 
-# Generate each HTML page
+# Generate remaining HTML pages
 template = Template(base_template)
 for filename, data in pages.items():
-    html_content = template.render(page_title=data['page_title'], content=data['content'])
+    html_content = template.render(
+        page_title=data['page_title'],
+        content=data['content'],
+        recent_start_dates=recent_start_dates,
+        current_start_date=current_start_date
+    )
     with open(filename, 'w') as f:
         f.write(html_content)
