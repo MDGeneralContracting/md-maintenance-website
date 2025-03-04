@@ -20,9 +20,8 @@ jobs:
           python -c "
           import pandas as pd
           import os
-          import base64
-          import requests
-          data = ${{ toJSON(github.event.client_payload) }}
+          import json
+          data = json.loads('''${{ toJSON(github.event.client_payload) }}''')
           df = pd.read_csv('data/boom_lift_data.csv') if os.path.exists('data/boom_lift_data.csv') else pd.DataFrame(columns=['Completion time', 'Name', 'Boom Lift ID', 'Builder', 'Site', 'Location', 'Hours', 'Oil Level', 'Gas Level', 'General Issues', 'Oil Change', 'Oil Change Cost', 'Annual Inspection', 'Annual Inspection Cost', 'NDT', 'NDT Cost', 'Radiator Repair', 'Radiator Repair Cost', 'Other Work', 'Other Work Cost', 'Maintenance Work'])
           new_row = pd.DataFrame([data])
           df = pd.concat([df, new_row], ignore_index=True)
