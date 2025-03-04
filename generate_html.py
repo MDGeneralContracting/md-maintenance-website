@@ -483,7 +483,7 @@ pages = {
             </form>
             <p id="submission-message" style="display: none;">Submission successful!</p>
         '''
-    }
+    },
     'index.html': {
         'page_title': 'Home',
         'content': (
