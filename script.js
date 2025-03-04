@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    console.log('script.js loaded'); // Confirm script runs
+
     const tableOptions = {
         "paging": true,
         "searching": true,
@@ -17,24 +19,30 @@ $(document).ready(function() {
     $('#user-summary-table').DataTable(tableOptions);
     $('#builder-summary-table').DataTable(tableOptions);
 
-    // Fetch latest hours for validation
     let latestHours = {};
     boomTable.rows().every(function() {
         const data = this.data();
         latestHours[data[boom_columns.indexOf('Boom Lift ID')]] = parseInt(data[boom_columns.indexOf('Hours')]) || 0;
     });
 
-    // Form toggling and other functions
     window.toggleForm = function() {
         const role = $('#role').val();
-        $('#installer-form').toggle(role === 'installer');
-        $('#mechanic-form').toggle(role === 'mechanic');
+        const installerForm = $('#installer-form');
+        const mechanicForm = $('#mechanic-form');
+        
         if (role === 'installer') {
-            $('#installer-name').prop('required', true);
-            $('#mechanic-name').prop('required', false);
+            installerForm.show();
+            mechanicForm.hide();
+            $('#installer-name, #boom-lift-id, #site, #hours, #oil-level, #gas-level, #certify-installer').prop('required', true);
+            $('#mechanic-name, #mechanic-boom-lift-id, #mechanic-site, #mechanic-hours, #mechanic-oil-level, #mechanic-gas-level, #certify-mechanic').prop('required', false);
         } else if (role === 'mechanic') {
-            $('#installer-name').prop('required', false);
-            $('#mechanic-name').prop('required', true);
+            installerForm.hide();
+            mechanicForm.show();
+            $('#installer-name, #boom-lift-id, #site, #hours, #oil-level, #gas-level, #certify-installer').prop('required', false);
+            $('#mechanic-name, #mechanic-boom-lift-id, #mechanic-site, #mechanic-hours, #mechanic-oil-level, #mechanic-gas-level, #certify-mechanic').prop('required', true);
+        } else {
+            installerForm.hide();
+            mechanicForm.hide();
         }
     };
 
@@ -92,29 +100,28 @@ $(document).ready(function() {
         );
     };
 
-    // Form submission with detailed logging
     $('#boom-lift-form').on('submit', function(e) {
         e.preventDefault();
-        console.log('Form submission triggered'); // Log when submission starts
+        console.log('Submit button clicked');
 
         const role = $('#role').val();
-        console.log('Selected role:', role); // Log the selected role
+        console.log('Selected role:', role);
 
         const completionTimeField = role === 'installer' ? '#completion-time' : '#mechanic-completion-time';
         $(completionTimeField).val(new Date().toISOString());
-        console.log('Completion time set:', $(completionTimeField).val()); // Log the timestamp
+        console.log('Completion time set:', $(completionTimeField).val());
 
         const formData = $(this).serializeArray().reduce((obj, item) => {
             obj[item.name] = item.value;
             return obj;
         }, {});
-        console.log('Form data:', formData); // Log the collected form data
+        console.log('Form data:', formData);
 
-        const githubToken = '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'; // Replace with your actual PAT
+        const githubToken = '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'; // Replace with your PAT
         const repoOwner = 'MDGeneralContracting';
         const repoName = 'md-maintenance-website';
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`;
-        console.log('API URL:', apiUrl); // Log the constructed URL
+        console.log('API URL:', apiUrl);
 
         $.ajax({
             url: apiUrl,
@@ -129,10 +136,10 @@ $(document).ready(function() {
                 client_payload: formData
             }),
             beforeSend: function() {
-                console.log('Sending API request...'); // Log before the request
+                console.log('Sending API request...');
             },
             success: function(response) {
-                console.log('API request successful:', response); // Log success (usually empty for 204)
+                console.log('API request successful:', response);
                 const successMessage = $('<div class="success-message">Submission successful! Redirecting to Home...</div>');
                 $('body').append(successMessage);
                 successMessage.css({
@@ -158,13 +165,12 @@ $(document).ready(function() {
                     error: error,
                     response: xhr.responseJSON,
                     statusCode: xhr.status
-                }); // Log detailed error info
+                });
                 alert('Submission failed: ' + (xhr.responseJSON?.message || error));
             }
         });
     });
 
-    // Define boom_columns to match Python
     const boom_columns = [
         'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level',
         'General Issues', 'Last Maintenance', 'Oil Change', 'Hours Since Oil Change', 
