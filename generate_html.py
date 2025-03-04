@@ -5,19 +5,32 @@ from io import BytesIO
 from jinja2 import Template
 from datetime import datetime, timedelta
 
-# Download Excel file
+# Download Excel file from environment variable URL
 url = os.environ['EXCEL_URL']
 response = requests.get(url, timeout=10)
 response.raise_for_status()
 excel_data = BytesIO(response.content)
 
-# Read Sheet1
+# Read 'Sheet1' from the Excel file
 df = pd.read_excel(excel_data, sheet_name='Sheet1', engine='openpyxl', parse_dates=['Completion time'])
 df['General Issues'] = df['General Issues'].fillna('')
-df['Maintenance Work'] = df['Maintenance Work'].fillna('')  # Ensure no NaN
+df['Maintenance Work'] = df['Maintenance Work'].fillna('')  # Ensure no NaN values
 df['Cost of Maintenance'] = df['Cost of Maintenance'].fillna(0)  # Default to 0 if missing
 
-# Helper function to generate HTML table with unique ID
+# Define valid boom lift IDs
+valid_boom_lifts = [
+    'B_GNE_001', 'B_GNE_002', 'B_GNE_003', 'B_GNE_004', 
+    'B_GNE_005', 'B_GNE_006', 'B_GNE_007', 'B_GNE_008', 
+    'B_JLG_001', 'B_SNK_001'
+]
+
+# Filter dataframe to only include valid boom lift IDs
+valid_df = df[df['Boom Lift ID'].isin(valid_boom_lifts)].copy()
+
+# Convert 'Hours' to integer where possible
+valid_df['Hours'] = valid_df['Hours'].apply(lambda x: int(x) if pd.notnull(x) else 0)
+
+# Helper function to generate HTML table with a unique ID
 def generate_html_table(df, columns, table_id):
     headers = ''.join(f'<th>{col}</th>' for col in columns)
     rows = ''
@@ -28,46 +41,69 @@ def generate_html_table(df, columns, table_id):
 
 # Full Data Table with Maintenance Columns
 display_columns = [
-    'Name', 'Boom Lift ID', 'Completion time', 'Builder', 'Site', 'Hours',
-    'Oil Level', 'Gas Level', 'General Issues', 'Continue to Maintenance or Complete',
-    'Maintenance Work', 'Cost of Maintenance'
+    'Completion time', 'Name', 'Boom Lift ID', 'Hours', 'Oil Level', 'Gas Level', 
+    'General Issues', 'Maintenance Work', 'Cost of Maintenance'
 ]
-full_data_df = df[display_columns].sort_values('Completion time', ascending=False)
+full_data_df = valid_df[display_columns].sort_values('Completion time', ascending=False)
 full_data_table = generate_html_table(full_data_df, display_columns, "full-data-table")
 
-# Latest Boom Lift Summary with Maintenance Parsing
+# Boom Lift Summary
 boom_columns = [
     'Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 
     'General Issues', 'Last Maintenance', 'Oil Change', 'Annual Inspection'
 ]
-latest_boom = df.sort_values('Completion time', ascending=False).drop_duplicates('Boom Lift ID').sort_values('Boom Lift ID')
 
-# Parse Maintenance Work for Oil Change and Annual Inspection
-def parse_maintenance(row):
-    maintenance = row['Maintenance Work']
-    hours = row['Hours']
-    completion_time = row['Completion time']
-    last_maintenance = completion_time.strftime('%Y-%m-%d') if maintenance else ''
-    oil_change = ''
-    annual_inspection = ''
-    if maintenance:
-        items = [item.strip() for item in maintenance.split(';')]
-        for item in items:
-            if 'Oil Change' in item:
-                oil_change = hours  # Use hours at this submission
-            elif 'Annual Inspection' in item:
-                annual_inspection = hours
-    return pd.Series([last_maintenance, oil_change, annual_inspection], 
-                     index=['Last Maintenance', 'Oil Change', 'Annual Inspection'])
+# Create a base dataframe with all valid boom lift IDs
+boom_lift_summary = pd.DataFrame({'Boom Lift ID': valid_boom_lifts})
 
-# Apply parsing to latest_boom
-maintenance_data = latest_boom.apply(parse_maintenance, axis=1)
-latest_boom = pd.concat([latest_boom[['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']], 
-                         maintenance_data], axis=1)
-latest_boom_table = generate_html_table(latest_boom[boom_columns], boom_columns, "latest-boom-table")
+# Get the most recent submission for each boom lift (current status)
+current_status = valid_df.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+
+# Get the most recent maintenance date (any non-empty Maintenance Work)
+maintenance_submissions = valid_df[valid_df['Maintenance Work'].notna() & (valid_df['Maintenance Work'] != '')]
+last_maintenance = maintenance_submissions.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+last_maintenance['Last Maintenance'] = last_maintenance['Completion time'].dt.strftime('%Y-%m-%d')
+last_maintenance = last_maintenance[['Boom Lift ID', 'Last Maintenance']]
+
+# Get hours at the most recent oil change
+oil_changes = valid_df[valid_df['Maintenance Work'].str.contains('Oil Change', na=False)]
+oil_change_latest = oil_changes.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+oil_change_latest['Oil Change'] = oil_change_latest['Hours'].astype(int)
+oil_change_latest = oil_change_latest[['Boom Lift ID', 'Oil Change']]
+
+# Get hours at the most recent annual inspection
+annual_inspections = valid_df[valid_df['Maintenance Work'].str.contains('Annual Inspection', na=False)]
+annual_inspection_latest = annual_inspections.sort_values('Completion time').groupby('Boom Lift ID').last().reset_index()
+annual_inspection_latest['Annual Inspection'] = annual_inspection_latest['Hours'].astype(int)
+annual_inspection_latest = annual_inspection_latest[['Boom Lift ID', 'Annual Inspection']]
+
+# Merge all data into the summary table
+boom_lift_summary = boom_lift_summary.merge(
+    current_status[['Boom Lift ID', 'Completion time', 'Name', 'Hours', 'Oil Level', 'Gas Level', 'General Issues']],
+    on='Boom Lift ID', how='left'
+).merge(
+    last_maintenance, on='Boom Lift ID', how='left'
+).merge(
+    oil_change_latest, on='Boom Lift ID', how='left'
+).merge(
+    annual_inspection_latest, on='Boom Lift ID', how='left'
+)
+
+# Format columns for display
+boom_lift_summary['Completion time'] = boom_lift_summary['Completion time'].apply(
+    lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else 'No Data Available'
+)
+for col in ['Name', 'Oil Level', 'Gas Level', 'General Issues', 'Last Maintenance']:
+    boom_lift_summary[col] = boom_lift_summary[col].fillna('No Data Available')
+for col in ['Hours', 'Oil Change', 'Annual Inspection']:
+    boom_lift_summary[col] = boom_lift_summary[col].apply(
+        lambda x: int(x) if pd.notnull(x) else 'No Data Available'
+    )
+
+latest_boom_table = generate_html_table(boom_lift_summary[boom_columns], boom_columns, "latest-boom-table")
 
 # User Summary
-user_summary = df.groupby('Name').agg(
+user_summary = valid_df.groupby('Name').agg(
     submissions=('Completion time', 'count'),
     latest_submission=('Completion time', 'max'),
     issues=('General Issues', lambda x: (x != '').sum())
@@ -82,9 +118,9 @@ days_diff = (today - start_date).days
 period_number = days_diff // 14
 current_period_start = start_date + timedelta(days=period_number * 14)
 current_period_end = current_period_start + timedelta(days=13)
-two_week_df = df[
-    (df['Completion time'] >= current_period_start) &
-    (df['Completion time'] < current_period_end + timedelta(days=1))
+two_week_df = valid_df[
+    (valid_df['Completion time'] >= current_period_start) &
+    (valid_df['Completion time'] < current_period_end + timedelta(days=1))
 ].copy()
 two_week_df['Date'] = two_week_df['Completion time'].dt.date
 
@@ -115,7 +151,7 @@ builder_summary = two_week_df.groupby('Builder').agg(
 builder_columns = ['Builder', 'completions', 'issues']
 builder_summary_table = generate_html_table(builder_summary, builder_columns, "builder-summary-table")
 
-# Base Template with DataTables CDN
+# Base HTML Template with DataTables CDN
 base_template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -189,7 +225,7 @@ pages = {
     }
 }
 
-# Generate each page
+# Generate each HTML page
 template = Template(base_template)
 for filename, data in pages.items():
     html_content = template.render(page_title=data['page_title'], content=data['content'])
