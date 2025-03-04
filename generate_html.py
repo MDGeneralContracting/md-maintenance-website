@@ -6,12 +6,12 @@ from jinja2 import Template
 from datetime import datetime, timedelta
 
 # GitHub raw CSV URL
-CSV_URL = 'https://raw.githubusercontent.com/MDGeneralContracting/md-maintenance-website/main/data/boom_lift_data.csv'
+CSV_URL = 'https://raw.githubusercontent.com/your-username/your-repo/main/data/boom_lift_data.csv'
 response = requests.get(CSV_URL, timeout=10)
 response.raise_for_status()
 df = pd.read_csv(pd.io.common.StringIO(response.text), parse_dates=['Completion time'])
 
-# Fill missing values
+# Fill missing values for new schema
 df['General Issues'] = df['General Issues'].fillna('')
 df['Maintenance Work'] = df['Maintenance Work'].fillna('')
 df['Oil Change'] = df['Oil Change'].fillna(False)
@@ -19,18 +19,20 @@ df['Annual Inspection'] = df['Annual Inspection'].fillna(False)
 df['NDT'] = df['NDT'].fillna(False)
 df['Radiator Repair'] = df['Radiator Repair'].fillna(False)
 df['Other Work'] = df['Other Work'].fillna('')
-for col in ['Oil Change Cost', 'Annual Inspection Cost', 'NDT Cost', 'Radiator Repair Cost', 'Other Work Cost', 'Cost of Maintenance']:
+for col in ['Oil Change Cost', 'Annual Inspection Cost', 'NDT Cost', 'Radiator Repair Cost', 'Other Work Cost']:
     df[col] = df[col].fillna(0)
 
-# Define valid boom lift IDs (unchanged)
+# Define valid boom lift IDs
 valid_boom_lifts = [
     'B_GNE_001', 'B_GNE_002', 'B_GNE_003', 'B_GNE_004',
     'B_GNE_005', 'B_GNE_006', 'B_GNE_007', 'B_GNE_008',
     'B_JLG_001', 'B_SNK_001'
 ]
 
-# Filter dataframe
+# Filter dataframe to only include valid boom lift IDs
 valid_df = df[df['Boom Lift ID'].isin(valid_boom_lifts)].copy()
+
+# Convert 'Hours' to integer where possible
 valid_df['Hours'] = valid_df['Hours'].apply(lambda x: int(x) if pd.notnull(x) else 0)
 
 # Helper function to generate HTML table with a unique ID
